@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { siteUrl } from "@/lib/site";
 import "@/styles/globals.css";
 
 /**
@@ -44,8 +45,12 @@ const body = localFont({
   fallback: ["-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
 });
 
+// `siteUrl()` treats an empty string the same as unset — Vercel lets a
+// variable exist with nothing typed into its value, which is "", not
+// undefined, so `process.env.X ?? fallback` does NOT catch it and
+// `new URL("")` throws. That is what broke this build.
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(siteUrl()),
 };
 
 export const viewport: Viewport = {
