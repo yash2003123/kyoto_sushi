@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getOrder, updateOrder, type OrderStatus } from "@/lib/orders";
+import { applyPaymentStatus, getOrder, updateOrder, type OrderStatus } from "@/lib/orders";
 import { mollie } from "@/lib/mollie";
 import { sendToKitchen } from "@/lib/kitchen";
 
@@ -56,10 +56,12 @@ export async function POST(request: Request) {
           ? "failed"
           : "pending";
 
-  const updated = await updateOrder(orderId, {
+  // Also frees the slot when the payment did not arrive, exactly once.
+  const updated = await applyPaymentStatus(
+    orderId,
     status,
-    paymentMethod: payment.method ?? order.paymentMethod,
-  });
+    payment.method ?? order.paymentMethod,
+  );
 
   // Print exactly once, and only for money that actually arrived.
   if (updated && status === "paid" && !updated.ticketSentAt) {

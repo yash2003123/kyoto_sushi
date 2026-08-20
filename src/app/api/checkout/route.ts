@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { PricingError, TRANSPORT_QUESTION_THRESHOLD, priceOrder, type Fulfilment } from "@/lib/pricing";
-import { createOrder, slotLoadForToday, updateOrder } from "@/lib/orders";
+import { SlotFullError, createOrder, slotLoadForToday, updateOrder } from "@/lib/orders";
 import { isSlotBookable, earliestSlot } from "@/lib/slots";
 import { formatMinutes, localNow, openState } from "@/lib/hours";
 import { getServiceState } from "@/lib/service-state";
 import { mollie, toMollieAmount } from "@/lib/mollie";
 import { isPaymentMethod } from "@/lib/payment-methods";
+import { isMisconfigured } from "@/lib/store";
 import { siteUrl } from "@/lib/site";
 import { Locale as MollieLocale, PaymentMethod, type Payment } from "@mollie/api-client";
 import { isLocale, type Locale } from "@/lib/i18n";
@@ -41,6 +42,16 @@ export async function POST(request: Request) {
     body = (await request.json()) as Body;
   } catch {
     return fail("bad-json");
+  }
+
+  // Refuse rather than take money we have nowhere durable to record. In this
+  // state the webhook could never find the order to mark it paid, so the
+  // kitchen would never be told — a silent loss is worse than a visible error.
+  if (isMisconfigured()) {
+    console.error(
+      "[checkout] no order store configured (KV_REST_API_URL / KV_REST_API_TOKEN). Refusing orders.",
+    );
+    return fail("store-unavailable", 503);
   }
 
   const service = getServiceState();
@@ -115,16 +126,24 @@ export async function POST(request: Request) {
     return fail("transport-required");
   }
 
-  const order = await createOrder({
-    locale,
-    fulfilment,
-    slotMinutes,
-    slotLabel,
-    customer,
-    notes: str(body.notes, 400),
-    transport,
-    totals,
-  });
+  let order;
+  try {
+    order = await createOrder({
+      locale,
+      fulfilment,
+      slotMinutes,
+      slotLabel,
+      customer,
+      notes: str(body.notes, 400),
+      transport,
+      totals,
+    });
+  } catch (error) {
+    // The slot filled between the picker offering it and the customer pressing
+    // pay. Nothing was written and no money was taken.
+    if (error instanceof SlotFullError) return fail("slot-unavailable", 409);
+    throw error;
+  }
 
   const base = siteUrl(request);
   const returnUrl = `${base}/${locale}/order/status?order=${order.id}`;

@@ -87,6 +87,27 @@ changes. Prices are integer cents. `available: false` greys a dish out without
 a deploy — the owner has to be able to sell out of sashimi at 21:00 without
 calling a developer.
 
+## Order storage
+
+Orders live in Redis, reached over HTTP (`src/lib/store.ts`). This is not a
+preference. Every API route is a separate serverless function on Vercel, and
+each scales to multiple instances, so a module-level `Map` is guaranteed to
+fail: the checkout writes an order into one instance and the Mollie webhook
+that must mark it paid runs somewhere else and finds nothing — payment taken,
+kitchen never told. HTTP rather than a TCP client because serverless functions
+cannot hold a connection pool open between invocations.
+
+Set it up on Vercel with **Storage → Upstash for Redis → connect to project**;
+the credentials are injected automatically. With no credentials the app falls
+back to an in-process store so `npm run dev` needs no setup, and refuses to
+serve `/api/checkout` in production rather than take money it cannot record.
+
+Slot capacity is claimed atomically (`reserveSlot`) rather than by counting
+existing orders. Read-then-write cannot express the cap: two customers checking
+out in the same second would both see room and both be admitted, which is
+exactly the eleven-orders-at-once problem the cap exists to prevent. Verified
+with six concurrent requests for one slot — four admitted, two refused.
+
 ## Ordering
 
 The slot picker reflects kitchen capacity, not a calendar:
@@ -182,9 +203,8 @@ highest-value item on the project. The layouts have image slots ready
 
 Two implementation notes for whoever picks this up:
 
-- `src/lib/orders.ts` is an in-memory store behind an async interface. It is
-  deliberately narrow so swapping in Postgres or KV is a change to that one
-  file — but it is **not** production-ready as is: a serverless instance
-  recycling drops the orders.
+- Order records carry a 30-day TTL, which covers the operational need but not
+  the Belgian bookkeeping retention period. Whatever system ends up holding the
+  accounting record is the source of truth for that, not this store.
 - Reservations are intentionally not built. Table booking is a separate system
   with a covers cap per slot; keeping it out of the order flow is on purpose.
