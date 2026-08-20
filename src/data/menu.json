@@ -1,0 +1,174 @@
+{
+  "$comment": "Menu source of truth. This file is the seam for the data layer: swap loadMenu() in src/lib/menu.ts for a CMS fetch or a spreadsheet export and nothing else in the app changes. Prices are integer cents. `available: false` greys a dish out without a deploy.",
+  "updatedAt": "2026-08-20",
+  "courses": [
+    {
+      "id": "sushi",
+      "kanji": "寿司",
+      "categories": [
+        {
+          "id": "traditional",
+          "name": { "nl": "Traditional sushi menu", "en": "Traditional sushi menu", "fr": "Menu sushi traditionnel" },
+          "note": { "nl": "17 stuks & meer", "en": "17 pieces and up", "fr": "17 pièces et plus" },
+          "items": [
+            { "id": "trad-a", "name": { "nl": "Sushi menu A", "en": "Sushi menu A", "fr": "Menu sushi A" }, "desc": { "nl": "6 nigiri, 6 maki, 5 california", "en": "6 nigiri, 6 maki, 5 california", "fr": "6 nigiri, 6 maki, 5 california" }, "price": 1990, "pieces": 17, "allergens": ["fish", "soy", "sesame"], "tags": ["raw"], "available": true },
+            { "id": "trad-b", "name": { "nl": "Sushi menu B", "en": "Sushi menu B", "fr": "Menu sushi B" }, "desc": { "nl": "8 nigiri, 8 maki, 6 california", "en": "8 nigiri, 8 maki, 6 california", "fr": "8 nigiri, 8 maki, 6 california" }, "price": 2650, "pieces": 22, "allergens": ["fish", "soy", "sesame"], "tags": ["raw"], "available": true },
+            { "id": "trad-c", "name": { "nl": "Sushi menu C", "en": "Sushi menu C", "fr": "Menu sushi C" }, "desc": { "nl": "10 nigiri, 10 maki, 8 california, 4 sashimi", "en": "10 nigiri, 10 maki, 8 california, 4 sashimi", "fr": "10 nigiri, 10 maki, 8 california, 4 sashimi" }, "price": 3450, "pieces": 32, "allergens": ["fish", "soy", "sesame"], "tags": ["raw"], "available": true }
+          ]
+        },
+        {
+          "id": "boat",
+          "name": { "nl": "Sushi & sashimi special", "en": "Sushi & sashimi special", "fr": "Spécial sushi & sashimi" },
+          "note": { "nl": "op houten boot", "en": "served on a wooden boat", "fr": "servi sur bateau en bois" },
+          "items": [
+            { "id": "boat-2", "name": { "nl": "Sushiboot voor twee", "en": "Sushi boat for two", "fr": "Bateau sushi pour deux" }, "desc": { "nl": "40 stuks, sashimi, nigiri en rolls", "en": "40 pieces, sashimi, nigiri and rolls", "fr": "40 pièces, sashimi, nigiri et rolls" }, "price": 6900, "pieces": 40, "allergens": ["fish", "soy", "sesame"], "tags": ["raw", "signature"], "available": true },
+            { "id": "boat-4", "name": { "nl": "Sushiboot voor vier", "en": "Sushi boat for four", "fr": "Bateau sushi pour quatre" }, "desc": { "nl": "76 stuks, sashimi, nigiri en rolls", "en": "76 pieces, sashimi, nigiri and rolls", "fr": "76 pièces, sashimi, nigiri et rolls" }, "price": 12900, "pieces": 76, "allergens": ["fish", "soy", "sesame"], "tags": ["raw", "signature"], "available": true }
+          ]
+        },
+        {
+          "id": "rolls",
+          "name": { "nl": "Topping, tempura & crunch rolls", "en": "Topping, tempura & crunch rolls", "fr": "Topping, tempura & crunch rolls" },
+          "items": [
+            { "id": "roll-salmon-top", "name": { "nl": "Topping roll zalm", "en": "Salmon topping roll", "fr": "Topping roll saumon" }, "desc": { "nl": "8 stuks, zalm, avocado, spicy mayo", "en": "8 pieces, salmon, avocado, spicy mayo", "fr": "8 pièces, saumon, avocat, mayo épicée" }, "price": 1450, "pieces": 8, "allergens": ["fish", "egg", "soy"], "tags": ["raw", "spicy"], "available": true },
+            { "id": "roll-tempura-prawn", "name": { "nl": "Tempura roll garnaal", "en": "Prawn tempura roll", "fr": "Tempura roll crevette" }, "desc": { "nl": "8 stuks, gefrituurde garnaal, komkommer", "en": "8 pieces, fried prawn, cucumber", "fr": "8 pièces, crevette frite, concombre" }, "price": 1390, "pieces": 8, "allergens": ["crustacean", "gluten", "egg", "soy"], "tags": [], "available": true },
+            { "id": "roll-crunch", "name": { "nl": "Crunch roll", "en": "Crunch roll", "fr": "Crunch roll" }, "desc": { "nl": "8 stuks, krokante ui, teriyaki", "en": "8 pieces, crisp onion, teriyaki", "fr": "8 pièces, oignon croustillant, teriyaki" }, "price": 1350, "pieces": 8, "allergens": ["gluten", "soy", "sesame"], "tags": [], "available": true },
+            { "id": "roll-yaki", "name": { "nl": "Yaki roll", "en": "Yaki roll", "fr": "Yaki roll" }, "desc": { "nl": "8 stuks, gebrande zalm, unagisaus", "en": "8 pieces, seared salmon, unagi sauce", "fr": "8 pièces, saumon saisi, sauce unagi" }, "price": 1490, "pieces": 8, "allergens": ["fish", "soy"], "tags": [], "available": true },
+            { "id": "roll-california", "name": { "nl": "California roll", "en": "California roll", "fr": "California roll" }, "desc": { "nl": "8 stuks, surimi, avocado, masago", "en": "8 pieces, surimi, avocado, masago", "fr": "8 pièces, surimi, avocat, masago" }, "price": 1090, "pieces": 8, "allergens": ["fish", "crustacean", "egg"], "tags": [], "available": true },
+            { "id": "roll-veggie", "name": { "nl": "Inside out groente", "en": "Vegetable inside out", "fr": "Inside out légumes" }, "desc": { "nl": "8 stuks, avocado, komkommer, mango", "en": "8 pieces, avocado, cucumber, mango", "fr": "8 pièces, avocat, concombre, mangue" }, "price": 1050, "pieces": 8, "allergens": ["soy", "sesame"], "tags": ["vegetarian"], "available": true }
+          ]
+        },
+        {
+          "id": "nigiri-sashimi",
+          "name": { "nl": "Nigiri, sashimi & gunkan", "en": "Nigiri, sashimi & gunkan", "fr": "Nigiri, sashimi & gunkan" },
+          "items": [
+            { "id": "nigiri-sake", "name": { "nl": "Nigiri zalm", "en": "Salmon nigiri", "fr": "Nigiri saumon" }, "desc": { "nl": "2 stuks", "en": "2 pieces", "fr": "2 pièces" }, "price": 490, "pieces": 2, "allergens": ["fish"], "tags": ["raw"], "available": true },
+            { "id": "nigiri-maguro", "name": { "nl": "Nigiri tonijn", "en": "Tuna nigiri", "fr": "Nigiri thon" }, "desc": { "nl": "2 stuks", "en": "2 pieces", "fr": "2 pièces" }, "price": 590, "pieces": 2, "allergens": ["fish"], "tags": ["raw"], "available": true },
+            { "id": "sashimi-mix", "name": { "nl": "Sashimi gemengd", "en": "Mixed sashimi", "fr": "Sashimi mixte" }, "desc": { "nl": "12 sneden, zalm, tonijn, zeebaars", "en": "12 slices, salmon, tuna, sea bass", "fr": "12 tranches, saumon, thon, bar" }, "price": 2450, "pieces": 12, "allergens": ["fish"], "tags": ["raw"], "available": true },
+            { "id": "gunkan-masago", "name": { "nl": "Gunkan masago", "en": "Masago gunkan", "fr": "Gunkan masago" }, "desc": { "nl": "2 stuks", "en": "2 pieces", "fr": "2 pièces" }, "price": 520, "pieces": 2, "allergens": ["fish", "egg"], "tags": ["raw"], "available": true },
+            { "id": "temaki-sake", "name": { "nl": "Temaki zalm", "en": "Salmon temaki", "fr": "Temaki saumon" }, "desc": { "nl": "1 handrol", "en": "1 hand roll", "fr": "1 rouleau" }, "price": 590, "pieces": 1, "allergens": ["fish", "soy"], "tags": ["raw"], "available": true }
+          ]
+        },
+        {
+          "id": "maki",
+          "name": { "nl": "Hoso maki & futo maki", "en": "Hoso maki & futo maki", "fr": "Hoso maki & futo maki" },
+          "items": [
+            { "id": "hoso-kappa", "name": { "nl": "Kappa maki", "en": "Kappa maki", "fr": "Kappa maki" }, "desc": { "nl": "6 stuks, komkommer", "en": "6 pieces, cucumber", "fr": "6 pièces, concombre" }, "price": 690, "pieces": 6, "allergens": ["soy"], "tags": ["vegetarian"], "available": true },
+            { "id": "hoso-sake", "name": { "nl": "Sake maki", "en": "Sake maki", "fr": "Sake maki" }, "desc": { "nl": "6 stuks, zalm", "en": "6 pieces, salmon", "fr": "6 pièces, saumon" }, "price": 850, "pieces": 6, "allergens": ["fish", "soy"], "tags": ["raw"], "available": true },
+            { "id": "futo-classic", "name": { "nl": "Futo maki", "en": "Futo maki", "fr": "Futo maki" }, "desc": { "nl": "6 dikke rollen, surimi, omelet, groenten", "en": "6 thick rolls, surimi, omelette, vegetables", "fr": "6 gros rouleaux, surimi, omelette, légumes" }, "price": 1190, "pieces": 6, "allergens": ["fish", "egg", "soy"], "tags": [], "available": true },
+            { "id": "futo-fried", "name": { "nl": "Futo maki gefrituurd", "en": "Fried futo maki", "fr": "Futo maki frit" }, "desc": { "nl": "6 stuks, warm geserveerd", "en": "6 pieces, served hot", "fr": "6 pièces, servi chaud" }, "price": 1290, "pieces": 6, "allergens": ["gluten", "egg", "soy"], "tags": [], "available": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "warm",
+      "kanji": "温菜",
+      "categories": [
+        {
+          "id": "starters",
+          "name": { "nl": "Warme voorgerechten", "en": "Hot starters", "fr": "Entrées chaudes" },
+          "items": [
+            { "id": "gyoza", "name": { "nl": "Gyoza kip", "en": "Chicken gyoza", "fr": "Gyoza poulet" }, "desc": { "nl": "6 stuks, ponzu", "en": "6 pieces, ponzu", "fr": "6 pièces, ponzu" }, "price": 750, "pieces": 6, "allergens": ["gluten", "soy", "sesame"], "tags": [], "available": true },
+            { "id": "edamame", "name": { "nl": "Edamame", "en": "Edamame", "fr": "Edamame" }, "desc": { "nl": "Met zeezout", "en": "With sea salt", "fr": "Au sel marin" }, "price": 550, "allergens": ["soy"], "tags": ["vegetarian"], "available": true },
+            { "id": "ebi-tempura", "name": { "nl": "Ebi tempura", "en": "Ebi tempura", "fr": "Ebi tempura" }, "desc": { "nl": "5 garnalen in tempurabeslag", "en": "5 prawns in tempura batter", "fr": "5 crevettes en tempura" }, "price": 990, "pieces": 5, "allergens": ["crustacean", "gluten", "egg"], "tags": [], "available": true },
+            { "id": "kimchi", "name": { "nl": "Kimchi", "en": "Kimchi", "fr": "Kimchi" }, "desc": { "nl": "Koreaanse gefermenteerde kool", "en": "Korean fermented cabbage", "fr": "Chou fermenté coréen" }, "price": 520, "allergens": ["fish"], "tags": ["spicy"], "available": true }
+          ]
+        },
+        {
+          "id": "mains",
+          "name": { "nl": "Warme hoofdgerechten", "en": "Hot mains", "fr": "Plats chauds" },
+          "note": { "nl": "teppanyaki", "en": "teppanyaki", "fr": "teppanyaki" },
+          "items": [
+            { "id": "teppan-beef", "name": { "nl": "Teppanyaki rund", "en": "Teppanyaki beef", "fr": "Teppanyaki bœuf" }, "desc": { "nl": "Met rijst en gegrilde groenten", "en": "With rice and grilled vegetables", "fr": "Avec riz et légumes grillés" }, "price": 2290, "allergens": ["soy", "sesame"], "tags": [], "available": true },
+            { "id": "teppan-chicken", "name": { "nl": "Teppanyaki kip", "en": "Teppanyaki chicken", "fr": "Teppanyaki poulet" }, "desc": { "nl": "Met rijst en teriyaki", "en": "With rice and teriyaki", "fr": "Avec riz et teriyaki" }, "price": 1890, "allergens": ["soy", "gluten"], "tags": [], "available": true },
+            { "id": "bibimbap", "name": { "nl": "Bibimbap", "en": "Bibimbap", "fr": "Bibimbap" }, "desc": { "nl": "Koreaanse rijstkom met ei en gochujang", "en": "Korean rice bowl with egg and gochujang", "fr": "Bol de riz coréen, œuf et gochujang" }, "price": 1790, "allergens": ["egg", "soy", "sesame"], "tags": ["spicy"], "available": true },
+            { "id": "bulgogi", "name": { "nl": "Bulgogi", "en": "Bulgogi", "fr": "Bulgogi" }, "desc": { "nl": "Gemarineerd rund, Koreaanse klassieker", "en": "Marinated beef, Korean classic", "fr": "Bœuf mariné, classique coréen" }, "price": 2190, "allergens": ["soy", "sesame", "gluten"], "tags": [], "available": true }
+          ]
+        },
+        {
+          "id": "wok-soup",
+          "name": { "nl": "Wok & soepen", "en": "Wok & soups", "fr": "Wok & soupes" },
+          "items": [
+            { "id": "wok-yakisoba", "name": { "nl": "Yakisoba", "en": "Yakisoba", "fr": "Yakisoba" }, "desc": { "nl": "Gewokte noedels, groenten, kip", "en": "Wok noodles, vegetables, chicken", "fr": "Nouilles sautées, légumes, poulet" }, "price": 1590, "allergens": ["gluten", "soy", "egg"], "tags": [], "available": true },
+            { "id": "wok-veg", "name": { "nl": "Wok groenten", "en": "Vegetable wok", "fr": "Wok légumes" }, "desc": { "nl": "Seizoensgroenten, sesam", "en": "Seasonal vegetables, sesame", "fr": "Légumes de saison, sésame" }, "price": 1450, "allergens": ["soy", "sesame"], "tags": ["vegetarian"], "available": true },
+            { "id": "miso", "name": { "nl": "Misosoep", "en": "Miso soup", "fr": "Soupe miso" }, "desc": { "nl": "Tofu, wakame, lente-ui", "en": "Tofu, wakame, spring onion", "fr": "Tofu, wakamé, oignon nouveau" }, "price": 420, "allergens": ["soy"], "tags": ["vegetarian"], "available": true },
+            { "id": "ramen", "name": { "nl": "Ramen kip", "en": "Chicken ramen", "fr": "Ramen poulet" }, "desc": { "nl": "Bouillon, noedels, ei, nori", "en": "Broth, noodles, egg, nori", "fr": "Bouillon, nouilles, œuf, nori" }, "price": 1690, "allergens": ["gluten", "egg", "soy"], "tags": [], "available": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bowls",
+      "kanji": "丼",
+      "categories": [
+        {
+          "id": "poke",
+          "name": { "nl": "Poke bowl & chirashi", "en": "Poke bowl & chirashi", "fr": "Poke bowl & chirashi" },
+          "items": [
+            { "id": "poke-salmon", "name": { "nl": "Poke bowl zalm", "en": "Salmon poke bowl", "fr": "Poke bowl saumon" }, "desc": { "nl": "Sushirijst, zalm, avocado, edamame, mango", "en": "Sushi rice, salmon, avocado, edamame, mango", "fr": "Riz vinaigré, saumon, avocat, edamame, mangue" }, "price": 1690, "allergens": ["fish", "soy", "sesame"], "tags": ["raw"], "available": true },
+            { "id": "poke-tofu", "name": { "nl": "Poke bowl tofu", "en": "Tofu poke bowl", "fr": "Poke bowl tofu" }, "desc": { "nl": "Gemarineerde tofu, wakame, komkommer", "en": "Marinated tofu, wakame, cucumber", "fr": "Tofu mariné, wakamé, concombre" }, "price": 1490, "allergens": ["soy", "sesame"], "tags": ["vegetarian"], "available": true },
+            { "id": "chirashi", "name": { "nl": "Chirashi", "en": "Chirashi", "fr": "Chirashi" }, "desc": { "nl": "Rijstkom met gemengde rauwe vis", "en": "Rice bowl with mixed raw fish", "fr": "Bol de riz, poisson cru mélangé" }, "price": 2190, "allergens": ["fish", "soy"], "tags": ["raw"], "available": false }
+          ]
+        },
+        {
+          "id": "bento",
+          "name": { "nl": "Bento box, salades & dessert", "en": "Bento box, salads & dessert", "fr": "Bento box, salades & desserts" },
+          "items": [
+            { "id": "bento-mix", "name": { "nl": "Bento box gemengd", "en": "Mixed bento box", "fr": "Bento box mixte" }, "desc": { "nl": "Sushi, teppanyaki, salade, misosoep", "en": "Sushi, teppanyaki, salad, miso soup", "fr": "Sushi, teppanyaki, salade, soupe miso" }, "price": 2290, "allergens": ["fish", "soy", "gluten", "sesame"], "tags": [], "available": true },
+            { "id": "salad-wakame", "name": { "nl": "Wakame salade", "en": "Wakame salad", "fr": "Salade wakamé" }, "desc": { "nl": "Zeewier, sesam", "en": "Seaweed, sesame", "fr": "Algues, sésame" }, "price": 590, "allergens": ["soy", "sesame"], "tags": ["vegetarian"], "available": true },
+            { "id": "mochi", "name": { "nl": "Mochi ijs", "en": "Mochi ice cream", "fr": "Mochi glacé" }, "desc": { "nl": "3 stuks, wisselende smaken", "en": "3 pieces, changing flavours", "fr": "3 pièces, parfums variables" }, "price": 690, "pieces": 3, "allergens": ["milk", "gluten"], "tags": ["vegetarian"], "available": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deals",
+      "kanji": "お得",
+      "categories": [
+        {
+          "id": "student",
+          "name": { "nl": "Kyoto student", "en": "Kyoto student", "fr": "Kyoto étudiant" },
+          "note": { "nl": "vanaf €12", "en": "from €12", "fr": "dès €12" },
+          "items": [
+            { "id": "student-12", "name": { "nl": "Studentenmenu", "en": "Student set", "fr": "Menu étudiant" }, "desc": { "nl": "12 stuks sushi, misosoep. Toon uw studentenkaart.", "en": "12 pieces of sushi, miso soup. Show your student card.", "fr": "12 pièces de sushi, soupe miso. Carte étudiant requise." }, "price": 1200, "pieces": 12, "allergens": ["fish", "soy", "sesame"], "tags": ["raw", "student"], "available": true },
+            { "id": "student-16", "name": { "nl": "Studentenmenu groot", "en": "Student set large", "fr": "Menu étudiant grand" }, "desc": { "nl": "18 stuks sushi, misosoep, edamame", "en": "18 pieces of sushi, miso soup, edamame", "fr": "18 pièces de sushi, soupe miso, edamame" }, "price": 1600, "pieces": 18, "allergens": ["fish", "soy", "sesame"], "tags": ["raw", "student"], "available": true }
+          ]
+        },
+        {
+          "id": "lunch",
+          "name": { "nl": "Middagmenu", "en": "Lunch menu", "fr": "Menu de midi" },
+          "note": { "nl": "11:30 tot 14:30", "en": "11:30 to 14:30", "fr": "11:30 à 14:30" },
+          "items": [
+            { "id": "lunch-sushi", "name": { "nl": "Lunch sushi", "en": "Lunch sushi", "fr": "Lunch sushi" }, "desc": { "nl": "10 stuks, misosoep, alleen tussen 11:30 en 14:30", "en": "10 pieces, miso soup, only between 11:30 and 14:30", "fr": "10 pièces, soupe miso, entre 11:30 et 14:30" }, "price": 1450, "pieces": 10, "allergens": ["fish", "soy"], "tags": ["raw", "lunch"], "available": true },
+            { "id": "lunch-wok", "name": { "nl": "Lunch wok", "en": "Lunch wok", "fr": "Lunch wok" }, "desc": { "nl": "Wokgerecht naar keuze met rijst", "en": "Wok dish of your choice with rice", "fr": "Plat wok au choix avec riz" }, "price": 1350, "allergens": ["soy", "gluten"], "tags": ["lunch"], "available": true },
+            { "id": "kids", "name": { "nl": "Kindermenu", "en": "Kids menu", "fr": "Menu enfant" }, "desc": { "nl": "6 stuks california, frisdrank", "en": "6 california pieces, soft drink", "fr": "6 california, boisson" }, "price": 990, "pieces": 6, "allergens": ["fish", "egg"], "tags": [], "available": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "drinks",
+      "kanji": "飲み物",
+      "categories": [
+        {
+          "id": "soft-hot",
+          "name": { "nl": "Frisdranken & warme dranken", "en": "Soft & hot drinks", "fr": "Boissons fraîches & chaudes" },
+          "items": [
+            { "id": "cola", "name": { "nl": "Coca-Cola", "en": "Coca-Cola", "fr": "Coca-Cola" }, "desc": { "nl": "33 cl", "en": "33 cl", "fr": "33 cl" }, "price": 300, "allergens": [], "tags": [], "available": true },
+            { "id": "water", "name": { "nl": "Bruisend water", "en": "Sparkling water", "fr": "Eau pétillante" }, "desc": { "nl": "50 cl", "en": "50 cl", "fr": "50 cl" }, "price": 290, "allergens": [], "tags": [], "available": true },
+            { "id": "green-tea", "name": { "nl": "Groene thee", "en": "Green tea", "fr": "Thé vert" }, "desc": { "nl": "Sencha, pot", "en": "Sencha, pot", "fr": "Sencha, théière" }, "price": 350, "allergens": [], "tags": ["vegetarian"], "available": true }
+          ]
+        },
+        {
+          "id": "alcohol",
+          "name": { "nl": "Bier, wijn & sterke dranken", "en": "Beer, wine & spirits", "fr": "Bières, vins & spiritueux" },
+          "items": [
+            { "id": "asahi", "name": { "nl": "Asahi", "en": "Asahi", "fr": "Asahi" }, "desc": { "nl": "33 cl", "en": "33 cl", "fr": "33 cl" }, "price": 450, "allergens": ["gluten"], "tags": [], "available": true },
+            { "id": "house-white", "name": { "nl": "Huiswijn wit", "en": "House white", "fr": "Vin blanc maison" }, "desc": { "nl": "Glas 15 cl", "en": "Glass 15 cl", "fr": "Verre 15 cl" }, "price": 490, "allergens": ["sulphites"], "tags": [], "available": true },
+            { "id": "sake", "name": { "nl": "Sake warm", "en": "Warm sake", "fr": "Saké chaud" }, "desc": { "nl": "Karafje 18 cl", "en": "Carafe 18 cl", "fr": "Carafe 18 cl" }, "price": 750, "allergens": [], "tags": [], "available": true }
+          ]
+        }
+      ]
+    }
+  ]
+}
