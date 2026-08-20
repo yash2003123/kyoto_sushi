@@ -1,0 +1,7 @@
+[build]
+  command = "npm run build"
+
+# Pinned rather than left to auto-detect, so a future Netlify platform update
+# cannot silently change how the site is built and served.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
