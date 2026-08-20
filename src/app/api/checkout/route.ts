@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { PricingError, TRANSPORT_QUESTION_THRESHOLD, priceOrder, type Fulfilment } from "@/lib/pricing";
 import { SlotFullError, createOrder, slotLoadForToday, updateOrder } from "@/lib/orders";
+import { settlePayment } from "@/lib/fulfilment";
 import { isSlotBookable, earliestSlot } from "@/lib/slots";
 import { formatMinutes, localNow, openState } from "@/lib/hours";
 import { getServiceState } from "@/lib/service-state";
@@ -150,9 +151,15 @@ export async function POST(request: Request) {
   const client = mollie();
 
   // No API key configured: run the flow end to end without taking money, so
-  // the order path can be demoed and tested before the merchant account exists.
+  // the order path can be exercised before the merchant account exists.
+  //
+  // This settles the order through exactly the same code the real webhook
+  // uses, so the kitchen ticket genuinely fires and the confirmation page is
+  // telling the truth when it says the order reached the counter. Simulating
+  // only the redirect would leave the half that matters untested.
   if (!client) {
     await updateOrder(order.id, { paymentMethod: method });
+    await settlePayment(order.id, "paid", method);
     return NextResponse.json({
       orderId: order.id,
       reference: order.reference,

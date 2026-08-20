@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { applyPaymentStatus, getOrder, updateOrder, type OrderStatus } from "@/lib/orders";
+import { getOrder, type OrderStatus } from "@/lib/orders";
 import { mollie } from "@/lib/mollie";
-import { sendToKitchen } from "@/lib/kitchen";
+import { settlePayment } from "@/lib/fulfilment";
 
 export const dynamic = "force-dynamic";
 
@@ -56,22 +56,9 @@ export async function POST(request: Request) {
           ? "failed"
           : "pending";
 
-  // Also frees the slot when the payment did not arrive, exactly once.
-  const updated = await applyPaymentStatus(
-    orderId,
-    status,
-    payment.method ?? order.paymentMethod,
-  );
-
-  // Print exactly once, and only for money that actually arrived.
-  if (updated && status === "paid" && !updated.ticketSentAt) {
-    await updateOrder(orderId, { ticketSentAt: new Date().toISOString() });
-    const delivered = await sendToKitchen(updated);
-    if (!delivered) {
-      // Clear the guard so a retry can try the printer again.
-      await updateOrder(orderId, { ticketSentAt: null });
-    }
-  }
+  // Records the outcome, frees the slot if the money never arrived, and prints
+  // the ticket exactly once if it did.
+  await settlePayment(orderId, status, payment.method ?? order.paymentMethod);
 
   return NextResponse.json({ ok: true });
 }
