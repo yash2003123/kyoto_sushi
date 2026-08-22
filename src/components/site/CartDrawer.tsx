@@ -5,7 +5,6 @@ import { useEffect } from "react";
 import { useCart } from "@/lib/cart";
 import { findItem, t } from "@/lib/menu";
 import { formatPrice, type Locale } from "@/lib/i18n";
-import { DELIVERY_MINIMUM } from "@/lib/pricing";
 import type { Dictionary } from "@/lib/dictionary";
 import { AnimatedNumber, duration, ease, spring, stagger } from "@/components/motion";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -35,8 +34,6 @@ export function CartDrawer({ locale, dict }: { locale: Locale; dict: Dictionary 
       window.removeEventListener("keydown", onKey);
     };
   }, [drawerOpen, closeDrawer]);
-
-  const belowMinimum = subtotal > 0 && subtotal < DELIVERY_MINIMUM;
 
   return (
     <AnimatePresence>
@@ -172,20 +169,6 @@ export function CartDrawer({ locale, dict }: { locale: Locale; dict: Dictionary 
                     className="font-display tabular text-2xl font-bold"
                   />
                 </div>
-
-                <AnimatePresence initial={false}>
-                  {belowMinimum ? (
-                    <m.p
-                      className="text-washi-dim m-0 overflow-hidden text-[12.5px]"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: duration.fast, ease: ease.out }}
-                    >
-                      {dict.cart.minimum}
-                    </m.p>
-                  ) : null}
-                </AnimatePresence>
 
                 <ButtonLink
                   href={`/${locale}/order`}

@@ -21,7 +21,7 @@ export type KitchenTicket = {
   readyAt: string;
   fulfilment: Order["fulfilment"];
   transport: Order["transport"];
-  customer: { name: string; phone: string; address?: string };
+  customer: { name: string; phone: string };
   notes: string;
   lines: { name: string; quantity: number; note?: string }[];
   total: number;
@@ -37,12 +37,6 @@ export function buildTicket(order: Order): KitchenTicket {
     customer: {
       name: order.customer.name,
       phone: order.customer.phone,
-      address:
-        order.fulfilment === "delivery"
-          ? [order.customer.address, order.customer.postcode, order.customer.city]
-              .filter(Boolean)
-              .join(", ")
-          : undefined,
     },
     notes: order.notes,
     // The ticket prints in Dutch: that is the language of the kitchen,

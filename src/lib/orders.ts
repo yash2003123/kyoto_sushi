@@ -20,9 +20,6 @@ export type Customer = {
   name: string;
   phone: string;
   email: string;
-  address?: string;
-  postcode?: string;
-  city?: string;
 };
 
 export type Order = {

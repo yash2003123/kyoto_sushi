@@ -1,5 +1,5 @@
 /**
- * Pickup and delivery slot generation.
+ * Pickup slot generation.
  *
  * The slot picker reflects kitchen capacity, not a calendar. Three rules,
  * all of which come from how a sushi counter actually runs:

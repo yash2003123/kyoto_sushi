@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PricingError, TRANSPORT_QUESTION_THRESHOLD, priceOrder, type Fulfilment } from "@/lib/pricing";
+import { PricingError, TRANSPORT_QUESTION_THRESHOLD, priceOrder } from "@/lib/pricing";
 import { SlotFullError, createOrder, slotLoadForToday, updateOrder } from "@/lib/orders";
 import { settlePayment } from "@/lib/fulfilment";
 import { isSlotBookable, earliestSlot } from "@/lib/slots";
@@ -9,6 +9,7 @@ import { mollie, toMollieAmount } from "@/lib/mollie";
 import { isPaymentMethod } from "@/lib/payment-methods";
 import { isMisconfigured } from "@/lib/store";
 import { siteUrl } from "@/lib/site";
+import { EMAIL, isValidPhone } from "@/lib/validation";
 import { Locale as MollieLocale, PaymentMethod, type Payment } from "@mollie/api-client";
 import { isLocale, type Locale } from "@/lib/i18n";
 
@@ -16,7 +17,6 @@ export const dynamic = "force-dynamic";
 
 type Body = {
   locale?: string;
-  fulfilment?: string;
   slotMinutes?: number | null;
   method?: string;
   notes?: string;
@@ -24,10 +24,6 @@ type Body = {
   customer?: Record<string, unknown>;
   cart?: { id?: unknown; quantity?: unknown }[];
 };
-
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-/** Belgian mobile/landline, tolerant of spaces, dots and +32. */
-const PHONE = /^(\+?32|0)[\s./-]?\d(?:[\s./-]?\d){7,8}$/;
 
 function str(value: unknown, max = 200): string {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
@@ -63,8 +59,6 @@ export async function POST(request: Request) {
 
   const locale: Locale = isLocale(str(body.locale)) ? (body.locale as Locale) : "nl";
 
-  const fulfilment = body.fulfilment === "delivery" ? "delivery" : "pickup";
-
   const method = str(body.method);
   if (!isPaymentMethod(method)) return fail("bad-method");
 
@@ -74,16 +68,10 @@ export async function POST(request: Request) {
     name: str(raw.name, 80),
     phone: str(raw.phone, 32),
     email: str(raw.email, 120),
-    address: str(raw.address, 120),
-    postcode: str(raw.postcode, 12),
-    city: str(raw.city, 60),
   };
   if (customer.name.length < 2) return fail("bad-name");
   if (!EMAIL.test(customer.email)) return fail("bad-email");
-  if (!PHONE.test(customer.phone.replace(/\s/g, ""))) return fail("bad-phone");
-  if (fulfilment === "delivery" && (!customer.address || !customer.postcode || !customer.city)) {
-    return fail("bad-address");
-  }
+  if (!isValidPhone(customer.phone)) return fail("bad-phone");
 
   // --- cart, re-priced from the menu source, never from the client --------
   const cart = (body.cart ?? [])
@@ -92,7 +80,7 @@ export async function POST(request: Request) {
 
   let totals;
   try {
-    totals = priceOrder(cart, fulfilment as Fulfilment);
+    totals = priceOrder(cart);
   } catch (error) {
     if (error instanceof PricingError) return fail(error.message);
     throw error;
@@ -123,7 +111,7 @@ export async function POST(request: Request) {
       ? transportRaw
       : null;
   // Above €60 the packing genuinely differs, so the answer is required.
-  if (fulfilment === "pickup" && totals.total >= TRANSPORT_QUESTION_THRESHOLD && !transport) {
+  if (totals.total >= TRANSPORT_QUESTION_THRESHOLD && !transport) {
     return fail("transport-required");
   }
 
@@ -131,7 +119,7 @@ export async function POST(request: Request) {
   try {
     order = await createOrder({
       locale,
-      fulfilment,
+      fulfilment: "pickup",
       slotMinutes,
       slotLabel,
       customer,

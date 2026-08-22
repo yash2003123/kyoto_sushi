@@ -8,12 +8,16 @@
 
 import { findItem } from "./menu";
 
-export const DELIVERY_FEE = 350;
-export const DELIVERY_MINIMUM = 2500;
 /** Above this, we ask how the customer is travelling so packing matches. */
 export const TRANSPORT_QUESTION_THRESHOLD = 6000;
 
-export type Fulfilment = "pickup" | "delivery";
+/**
+ * Pickup only — there is no delivery fleet, so this is not a real choice yet.
+ * Kept as a named type rather than dropped outright because `Order.fulfilment`
+ * and the kitchen ticket both read it, and a single-value union still says
+ * plainly what those fields mean.
+ */
+export type Fulfilment = "pickup";
 
 export type PricedLine = {
   id: string;
@@ -25,7 +29,6 @@ export type PricedLine = {
 export type OrderTotals = {
   lines: PricedLine[];
   subtotal: number;
-  deliveryFee: number;
   total: number;
 };
 
@@ -38,7 +41,7 @@ export class PricingError extends Error {}
  * hard error rather than a silent drop: the customer must not discover at the
  * counter that the sashimi they paid for was already sold out.
  */
-export function priceOrder(cart: CartInput, fulfilment: Fulfilment): OrderTotals {
+export function priceOrder(cart: CartInput): OrderTotals {
   if (cart.length === 0) throw new PricingError("empty-cart");
 
   const lines: PricedLine[] = cart.map((line) => {
@@ -61,11 +64,5 @@ export function priceOrder(cart: CartInput, fulfilment: Fulfilment): OrderTotals
 
   const subtotal = lines.reduce((sum, l) => sum + l.lineTotal, 0);
 
-  if (fulfilment === "delivery" && subtotal < DELIVERY_MINIMUM) {
-    throw new PricingError("below-delivery-minimum");
-  }
-
-  const deliveryFee = fulfilment === "delivery" ? DELIVERY_FEE : 0;
-
-  return { lines, subtotal, deliveryFee, total: subtotal + deliveryFee };
+  return { lines, subtotal, total: subtotal };
 }

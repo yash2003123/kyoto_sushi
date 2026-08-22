@@ -12,7 +12,7 @@ type Status = "pending" | "paid" | "failed" | "expired" | "unknown";
 type OrderResponse = {
   reference: string;
   status: Status;
-  fulfilment: "pickup" | "delivery";
+  fulfilment: "pickup";
   slotLabel: string;
   total: number;
 };

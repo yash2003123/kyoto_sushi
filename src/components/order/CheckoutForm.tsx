@@ -6,12 +6,8 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart";
 import { findItem, t } from "@/lib/menu";
 import { formatPrice, type Locale } from "@/lib/i18n";
-import {
-  DELIVERY_FEE,
-  DELIVERY_MINIMUM,
-  TRANSPORT_QUESTION_THRESHOLD,
-  type Fulfilment,
-} from "@/lib/pricing";
+import { TRANSPORT_QUESTION_THRESHOLD } from "@/lib/pricing";
+import { EMAIL, isValidPhone } from "@/lib/validation";
 import type { Dictionary } from "@/lib/dictionary";
 import type { PaymentMethodId } from "@/lib/payment-methods";
 import { SlotPicker } from "./SlotPicker";
@@ -20,16 +16,12 @@ import { Field, TextareaField } from "./Field";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { AnimatedNumber, Reveal, duration, ease, spring } from "@/components/motion";
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const PHONE = /^(\+?32|0)[\s./-]?\d(?:[\s./-]?\d){7,8}$/;
-
 type Errors = Partial<Record<string, string>>;
 
 export function CheckoutForm({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const { lines, subtotal, clear, ready } = useCart();
   const router = useRouter();
 
-  const [fulfilment, setFulfilment] = useState<Fulfilment>("pickup");
   const [slotMinutes, setSlotMinutes] = useState<number | null>(null);
   const [method, setMethod] = useState<PaymentMethodId>("bancontact");
   const [transport, setTransport] = useState<"car" | "bike" | "foot" | null>(null);
@@ -37,9 +29,6 @@ export function CheckoutForm({ locale, dict }: { locale: Locale; dict: Dictionar
     name: "",
     phone: "",
     email: "",
-    address: "",
-    postcode: "",
-    city: "Leuven",
     notes: "",
   });
   const [errors, setErrors] = useState<Errors>({});
@@ -52,11 +41,8 @@ export function CheckoutForm({ locale, dict }: { locale: Locale; dict: Dictionar
     [],
   );
 
-  const deliveryFee = fulfilment === "delivery" ? DELIVERY_FEE : 0;
-  const total = subtotal + deliveryFee;
-  const belowMinimum = fulfilment === "delivery" && subtotal < DELIVERY_MINIMUM;
-  const needsTransport =
-    fulfilment === "pickup" && total >= TRANSPORT_QUESTION_THRESHOLD;
+  const total = subtotal;
+  const needsTransport = total >= TRANSPORT_QUESTION_THRESHOLD;
 
   const set = (key: keyof typeof form) => (event: { target: { value: string } }) => {
     setForm((current) => ({ ...current, [key]: event.target.value }));
@@ -67,12 +53,7 @@ export function CheckoutForm({ locale, dict }: { locale: Locale; dict: Dictionar
     const next: Errors = {};
     if (form.name.trim().length < 2) next.name = dict.checkout.required;
     if (!EMAIL.test(form.email.trim())) next.email = dict.checkout.invalidEmail;
-    if (!PHONE.test(form.phone.replace(/\s/g, ""))) next.phone = dict.checkout.invalidPhone;
-    if (fulfilment === "delivery") {
-      if (!form.address.trim()) next.address = dict.checkout.required;
-      if (!form.postcode.trim()) next.postcode = dict.checkout.required;
-      if (!form.city.trim()) next.city = dict.checkout.required;
-    }
+    if (!isValidPhone(form.phone)) next.phone = dict.checkout.invalidPhone;
     if (needsTransport && !transport) next.transport = dict.checkout.required;
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -81,7 +62,7 @@ export function CheckoutForm({ locale, dict }: { locale: Locale; dict: Dictionar
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setServerError(null);
-    if (!validate() || belowMinimum) return;
+    if (!validate()) return;
 
     setSubmitting(true);
     try {
@@ -90,7 +71,6 @@ export function CheckoutForm({ locale, dict }: { locale: Locale; dict: Dictionar
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           locale,
-          fulfilment,
           slotMinutes,
           method,
           notes: form.notes,
@@ -154,27 +134,12 @@ export function CheckoutForm({ locale, dict }: { locale: Locale; dict: Dictionar
     <form onSubmit={submit} className="grid gap-10 lg:grid-cols-[1.35fr_1fr] lg:gap-14">
       <div className="flex flex-col gap-9">
         <Block title={dict.checkout.method}>
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Toggle
-              selected={fulfilment === "pickup"}
-              onClick={() => setFulfilment("pickup")}
-              title={dict.checkout.pickup}
-              hint={dict.checkout.pickupHint}
-            />
-            <Toggle
-              selected={fulfilment === "delivery"}
-              onClick={() => setFulfilment("delivery")}
-              title={dict.checkout.delivery}
-              hint={dict.checkout.deliveryHint}
-            />
+          <div className="border-rule bg-kaki/10 border px-4 py-3.5">
+            <span className="block text-[15px] font-medium">{dict.checkout.pickup}</span>
+            <span className="text-washi-dim block text-[12.5px]">
+              {dict.checkout.pickupHint}
+            </span>
           </div>
-          <AnimatePresence initial={false}>
-            {belowMinimum ? (
-              <Collapse>
-                <p className="text-kaki m-0 pt-2 text-[13px]">{dict.cart.minimum}</p>
-              </Collapse>
-            ) : null}
-          </AnimatePresence>
         </Block>
 
         <Block title={dict.checkout.when}>
@@ -226,37 +191,6 @@ export function CheckoutForm({ locale, dict }: { locale: Locale; dict: Dictionar
               />
             </div>
           </div>
-
-          <AnimatePresence initial={false}>
-            {fulfilment === "delivery" ? (
-              <Collapse>
-                <div className="grid gap-4 pt-4 sm:grid-cols-[2fr_1fr_1fr]">
-                  <Field
-                    label={dict.checkout.address}
-                    value={form.address}
-                    onChange={set("address")}
-                    error={errors.address}
-                    autoComplete="street-address"
-                  />
-                  <Field
-                    label={dict.checkout.postcode}
-                    value={form.postcode}
-                    onChange={set("postcode")}
-                    error={errors.postcode}
-                    inputMode="numeric"
-                    autoComplete="postal-code"
-                  />
-                  <Field
-                    label={dict.checkout.city}
-                    value={form.city}
-                    onChange={set("city")}
-                    error={errors.city}
-                    autoComplete="address-level2"
-                  />
-                </div>
-              </Collapse>
-            ) : null}
-          </AnimatePresence>
 
           <div className="pt-4">
             <TextareaField
@@ -355,17 +289,6 @@ export function CheckoutForm({ locale, dict }: { locale: Locale; dict: Dictionar
             <span className="tabular">{formatPrice(subtotal, locale)}</span>
           </div>
 
-          <AnimatePresence initial={false}>
-            {deliveryFee > 0 ? (
-              <Collapse>
-                <div className="flex justify-between pt-1 text-[14px]">
-                  <span className="text-washi-dim">{dict.checkout.deliveryFee}</span>
-                  <span className="tabular">{formatPrice(deliveryFee, locale)}</span>
-                </div>
-              </Collapse>
-            ) : null}
-          </AnimatePresence>
-
           <div className="border-rule mt-4 flex items-baseline justify-between border-t pt-4">
             <span className="text-[13px] tracking-[0.16em] uppercase">
               {dict.cart.total}
@@ -379,7 +302,7 @@ export function CheckoutForm({ locale, dict }: { locale: Locale; dict: Dictionar
 
           <Button
             type="submit"
-            disabled={submitting || belowMinimum || service.paused}
+            disabled={submitting || service.paused}
             className="mt-6 w-full"
           >
             {submitting
@@ -432,34 +355,5 @@ function Collapse({ children }: { children: React.ReactNode }) {
     >
       {children}
     </m.div>
-  );
-}
-
-function Toggle({
-  selected,
-  onClick,
-  title,
-  hint,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  title: string;
-  hint: string;
-}) {
-  return (
-    <m.button
-      type="button"
-      onClick={onClick}
-      aria-pressed={selected}
-      whileHover={{ y: -2 }}
-      whileTap={{ scale: 0.99 }}
-      transition={spring.press}
-      className={`border px-4 py-3.5 text-left transition-colors duration-200 ${
-        selected ? "border-kaki bg-kaki/10" : "border-rule hover:border-washi-dim"
-      }`}
-    >
-      <span className="block text-[15px] font-medium">{title}</span>
-      <span className="text-washi-dim block text-[12.5px]">{hint}</span>
-    </m.button>
   );
 }

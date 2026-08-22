@@ -31,10 +31,9 @@ export const terms: Record<Locale, LegalCopy> = {
         ],
       },
       {
-        heading: "Afhalen en leveren",
+        heading: "Afhalen",
         body: [
           "Bereidingstijd bedraagt ongeveer 30 minuten. Het gekozen tijdslot is een richttijd, geen garantie.",
-          "Levering binnen Leuven centrum vanaf €25, met €3,50 leveringskosten.",
         ],
       },
       {
@@ -70,10 +69,9 @@ export const terms: Record<Locale, LegalCopy> = {
         ],
       },
       {
-        heading: "Collection and delivery",
+        heading: "Collection",
         body: [
           "Preparation takes around 30 minutes. The chosen slot is a target, not a guarantee.",
-          "Delivery within central Leuven from €25, with a €3.50 fee.",
         ],
       },
       {
@@ -109,10 +107,9 @@ export const terms: Record<Locale, LegalCopy> = {
         ],
       },
       {
-        heading: "Retrait et livraison",
+        heading: "Retrait",
         body: [
           "La préparation prend environ 30 minutes. Le créneau choisi est une estimation, pas une garantie.",
-          "Livraison dans le centre de Louvain dès €25, avec €3,50 de frais.",
         ],
       },
       {
@@ -140,7 +137,7 @@ export const privacy: Record<Locale, LegalCopy> = {
       {
         heading: "Wat wij verzamelen",
         body: [
-          "Naam, telefoonnummer, e-mailadres en, bij levering, uw adres. Meer hebben wij niet nodig om uw bestelling te maken en af te leveren.",
+          "Naam, telefoonnummer en e-mailadres. Meer hebben wij niet nodig om uw bestelling klaar te maken.",
         ],
       },
       {
@@ -171,7 +168,7 @@ export const privacy: Record<Locale, LegalCopy> = {
       {
         heading: "What we collect",
         body: [
-          "Name, phone number, email address and, for delivery, your address. We do not need anything else to make and hand over your order.",
+          "Name, phone number and email address. We do not need anything else to prepare your order.",
         ],
       },
       {
@@ -202,7 +199,7 @@ export const privacy: Record<Locale, LegalCopy> = {
       {
         heading: "Ce que nous collectons",
         body: [
-          "Nom, téléphone, adresse e-mail et, pour la livraison, votre adresse. Nous n'avons besoin de rien d'autre.",
+          "Nom, téléphone et adresse e-mail. Nous n'avons besoin de rien d'autre pour préparer votre commande.",
         ],
       },
       {
