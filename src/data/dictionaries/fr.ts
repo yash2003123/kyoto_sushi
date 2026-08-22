@@ -132,6 +132,12 @@ const fr: Dictionary = {
       "Le paiement passe par Mollie. Vos données de carte ne touchent jamais nos serveurs.",
     prepNote: "Le premier créneau est dans 30 minutes.",
     error: "Le paiement n'a pas pu démarrer. Veuillez réessayer.",
+    errorNoSlots: "Plus aucun créneau aujourd'hui. Réessayez demain ou appelez-nous.",
+    errorSlotTaken: "Ce créneau vient d'être complet. Choisissez-en un autre.",
+    errorPaused: "Nous n'acceptons pas de commande en ligne pour le moment. Appelez-nous.",
+    errorClosed: "Nous sommes fermés en ce moment.",
+    errorUnavailable: "Notre système de commande a un souci passager. Réessayez ou appelez le 016 41 85 48.",
+    errorNetwork: "Pas de connexion. Vérifiez votre connexion et réessayez.",
   },
   confirm: {
     paidTitle: "Merci, votre commande est en cuisine",

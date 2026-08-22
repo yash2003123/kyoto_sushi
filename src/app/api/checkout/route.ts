@@ -146,8 +146,19 @@ export async function POST(request: Request) {
   // telling the truth when it says the order reached the counter. Simulating
   // only the redirect would leave the half that matters untested.
   if (!client) {
-    await updateOrder(order.id, { paymentMethod: method });
-    await settlePayment(order.id, "paid", method);
+    try {
+      await updateOrder(order.id, { paymentMethod: method });
+      await settlePayment(order.id, "paid", method);
+    } catch (error) {
+      // The order itself was already written by createOrder above — this is
+      // the settlement step failing (a store hiccup), not the order vanishing.
+      // Report it as a proper JSON error rather than letting it surface as an
+      // unhandled 500 with no body, which the browser cannot parse and which
+      // then shows the customer a generic "network" failure that hides what
+      // actually happened.
+      console.error("[checkout] simulated settlement failed", order.reference, error);
+      return fail("settlement-failed", 502);
+    }
     return NextResponse.json({
       orderId: order.id,
       reference: order.reference,

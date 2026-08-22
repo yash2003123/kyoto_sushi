@@ -129,6 +129,12 @@ const nl = {
     secure: "Betaling verloopt via Mollie. Uw kaartgegevens komen nooit op onze servers.",
     prepNote: "Vroegste tijdslot is nu plus 30 minuten.",
     error: "Er ging iets mis bij het aanmaken van de betaling. Probeer opnieuw.",
+    errorNoSlots: "Geen tijdslot meer beschikbaar vandaag. Probeer morgen opnieuw of bel ons.",
+    errorSlotTaken: "Dat tijdslot is net volgeboekt. Kies een ander moment.",
+    errorPaused: "We nemen momenteel geen online bestellingen aan. Bel ons gerust.",
+    errorClosed: "We zijn nu gesloten.",
+    errorUnavailable: "Onze bestelsysteem heeft eventjes een probleem. Probeer opnieuw of bel ons op 016 41 85 48.",
+    errorNetwork: "Geen verbinding. Controleer uw internet en probeer opnieuw.",
   },
   confirm: {
     paidTitle: "Bedankt, uw bestelling staat in de keuken",

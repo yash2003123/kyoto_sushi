@@ -130,6 +130,12 @@ const en: Dictionary = {
     secure: "Payment runs through Mollie. Your card details never touch our servers.",
     prepNote: "The earliest slot is now plus 30 minutes.",
     error: "Something went wrong starting the payment. Please try again.",
+    errorNoSlots: "No time slot left today. Try again tomorrow, or give us a call.",
+    errorSlotTaken: "That time slot just filled up. Pick another one.",
+    errorPaused: "We're not taking online orders right now. Feel free to call us.",
+    errorClosed: "We're closed right now.",
+    errorUnavailable: "Our ordering system is having a moment. Try again, or call us on 016 41 85 48.",
+    errorNetwork: "No connection. Check your internet and try again.",
   },
   confirm: {
     paidTitle: "Thank you, your order is with the kitchen",

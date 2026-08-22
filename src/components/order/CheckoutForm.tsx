@@ -18,6 +18,35 @@ import { AnimatedNumber, Reveal, duration, ease, spring } from "@/components/mot
 
 type Errors = Partial<Record<string, string>>;
 
+/**
+ * Maps a checkout failure to copy the customer can act on. The API returns a
+ * specific code for every case it distinguishes; showing the same generic
+ * sentence for all of them hides whether the fix is "pick another time" or
+ * "call the restaurant" — different enough that it is worth a few extra
+ * strings rather than one catch-all.
+ */
+function errorCopy(dict: Dictionary, code: string): string {
+  switch (code) {
+    case "no-slots":
+      return dict.checkout.errorNoSlots;
+    case "slot-unavailable":
+      return dict.checkout.errorSlotTaken;
+    case "orders-paused":
+      return dict.checkout.errorPaused;
+    case "closed":
+      return dict.checkout.errorClosed;
+    case "store-unavailable":
+    case "settlement-failed":
+    case "payment-create-failed":
+    case "no-checkout-url":
+      return dict.checkout.errorUnavailable;
+    case "network":
+      return dict.checkout.errorNetwork;
+    default:
+      return dict.checkout.error;
+  }
+}
+
 export function CheckoutForm({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const { lines, subtotal, clear, ready } = useCart();
   const router = useRouter();
@@ -313,7 +342,9 @@ export function CheckoutForm({ locale, dict }: { locale: Locale; dict: Dictionar
           <AnimatePresence initial={false}>
             {serverError ? (
               <Collapse>
-                <p className="text-kaki m-0 pt-3 text-[13px]">{dict.checkout.error}</p>
+                <p className="text-kaki m-0 pt-3 text-[13px]">
+                  {errorCopy(dict, serverError)}
+                </p>
               </Collapse>
             ) : null}
           </AnimatePresence>
