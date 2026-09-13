@@ -22,6 +22,10 @@ const nl = {
     cta2: "Bekijk de kaart",
     direct: "Rechtstreeks bestellen · geen tussenpersoon · klaar in ±30 min",
   },
+  gallery: {
+    title: "Waar zin in?",
+    sub: "Een greep uit de kaart, per gang.",
+  },
   board: {
     title: "De kaart",
     sub: "Zesendertig categorieën, geordend per gang. Kies waar u begint.",

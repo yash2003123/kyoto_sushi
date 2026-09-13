@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/dictionary";
 import { Hero } from "@/components/site/Hero";
+import { Gallery } from "@/components/site/Gallery";
 import { MenuBoard } from "@/components/site/MenuBoard";
 import { StudentBand } from "@/components/site/StudentBand";
 import { InfoCards } from "@/components/site/InfoCards";
@@ -21,6 +22,7 @@ export default async function HomePage({
     <>
       <RestaurantSchema locale={locale} />
       <Hero locale={locale} dict={dict} />
+      <Gallery locale={locale} dict={dict} />
       <MenuBoard locale={locale} dict={dict} />
       <StudentBand locale={locale} dict={dict} />
       <InfoCards dict={dict} />

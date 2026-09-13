@@ -24,6 +24,10 @@ const fr: Dictionary = {
     cta2: "Voir la carte",
     direct: "Commande directe · sans intermédiaire · prêt en ±30 min",
   },
+  gallery: {
+    title: "Envie de quoi ?",
+    sub: "Un aperçu de la carte, par service.",
+  },
   board: {
     title: "La carte",
     sub: "Trente-six catégories, classées par service. Choisissez par où commencer.",

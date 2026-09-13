@@ -24,6 +24,10 @@ const en: Dictionary = {
     cta2: "See the menu",
     direct: "Order direct · no middleman · ready in about 30 min",
   },
+  gallery: {
+    title: "What are you in the mood for?",
+    sub: "A taste of the menu, by course.",
+  },
   board: {
     title: "The menu",
     sub: "Thirty-six categories, sorted by course. Pick where you start.",
