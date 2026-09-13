@@ -46,7 +46,7 @@ const nl = {
     per: "per persoon",
   },
   info: {
-    title: "Praktisch",
+    title: "Goed om te weten",
     hours: "Openingsuren",
     find: "Vinden & bereiken",
     route: "Route in Google Maps",

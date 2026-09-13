@@ -48,7 +48,7 @@ const en: Dictionary = {
     per: "per person",
   },
   info: {
-    title: "Practical",
+    title: "Good to know",
     hours: "Opening hours",
     find: "Find us",
     route: "Open in Google Maps",
