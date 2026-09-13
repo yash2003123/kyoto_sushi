@@ -4,18 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Menu, MenuItem, CourseId } from "@/lib/menu";
 import type { HoursConfig } from "@/lib/hours";
+import { useAdminLocale } from "@/lib/use-admin-locale";
+import { AdminLocaleToggle } from "./AdminLocaleToggle";
+import type { AdminDictionary } from "@/lib/admin-dictionary";
 
 type Tab = "menu" | "hours" | "gallery";
-
-const WEEKDAY_LABELS = [
-  "Zondag",
-  "Maandag",
-  "Dinsdag",
-  "Woensdag",
-  "Donderdag",
-  "Vrijdag",
-  "Zaterdag",
-];
 
 function minutesToTime(minutes: number): string {
   const h = Math.floor(minutes / 60);
@@ -31,6 +24,7 @@ function timeToMinutes(time: string): number {
 export function Dashboard() {
   const [tab, setTab] = useState<Tab>("menu");
   const router = useRouter();
+  const { locale, setLocale, dict } = useAdminLocale();
 
   async function logout() {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -40,22 +34,25 @@ export function Dashboard() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="m-0 text-xl font-bold">Kyoto — Beheer</h1>
-        <button
-          onClick={logout}
-          className="border border-[#141412]/20 bg-white px-3 py-1.5 text-[13px]"
-        >
-          Uitloggen
-        </button>
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <h1 className="m-0 text-xl font-bold">{dict.brand}</h1>
+        <div className="flex items-center gap-3">
+          <AdminLocaleToggle locale={locale} onChange={setLocale} />
+          <button
+            onClick={logout}
+            className="border border-[#141412]/20 bg-white px-3 py-1.5 text-[13px]"
+          >
+            {dict.nav.logout}
+          </button>
+        </div>
       </div>
 
       <div className="mb-6 flex gap-2 border-b border-[#141412]/15">
         {(
           [
-            ["menu", "Kaart & prijzen"],
-            ["hours", "Openingsuren"],
-            ["gallery", "Foto's"],
+            ["menu", dict.nav.tabMenu],
+            ["hours", dict.nav.tabHours],
+            ["gallery", dict.nav.tabGallery],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -72,9 +69,9 @@ export function Dashboard() {
         ))}
       </div>
 
-      {tab === "menu" ? <MenuEditor /> : null}
-      {tab === "hours" ? <HoursEditor /> : null}
-      {tab === "gallery" ? <GalleryEditor /> : null}
+      {tab === "menu" ? <MenuEditor dict={dict} /> : null}
+      {tab === "hours" ? <HoursEditor dict={dict} /> : null}
+      {tab === "gallery" ? <GalleryEditor dict={dict} /> : null}
     </div>
   );
 }
@@ -83,25 +80,18 @@ export function Dashboard() {
  * Menu — prices and availability
  * ------------------------------------------------------------------ */
 
-const ALLERGEN_OPTIONS: { id: string; label: string }[] = [
-  { id: "fish", label: "vis" },
-  { id: "crustacean", label: "schaaldieren" },
-  { id: "gluten", label: "gluten" },
-  { id: "soy", label: "soja" },
-  { id: "sesame", label: "sesam" },
-  { id: "egg", label: "ei" },
-  { id: "milk", label: "melk" },
-  { id: "sulphites", label: "sulfieten" },
-];
+const ALLERGEN_IDS = [
+  "fish",
+  "crustacean",
+  "gluten",
+  "soy",
+  "sesame",
+  "egg",
+  "milk",
+  "sulphites",
+] as const;
 
-const TAG_OPTIONS: { id: string; label: string }[] = [
-  { id: "raw", label: "rauwe vis" },
-  { id: "spicy", label: "pittig" },
-  { id: "vegetarian", label: "vegetarisch" },
-  { id: "signature", label: "signature" },
-  { id: "student", label: "studentenmenu" },
-  { id: "lunch", label: "middagmenu" },
-];
+const TAG_IDS = ["raw", "spicy", "vegetarian", "signature", "student", "lunch"] as const;
 
 function blankItem(categoryId: string): MenuItem {
   return {
@@ -115,7 +105,7 @@ function blankItem(categoryId: string): MenuItem {
   };
 }
 
-function MenuEditor() {
+function MenuEditor({ dict }: { dict: AdminDictionary }) {
   const [menu, setMenu] = useState<Menu | null>(null);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -183,7 +173,7 @@ function MenuEditor() {
 
   function deleteItem(itemId: string) {
     if (!menu) return;
-    if (!window.confirm("Dit gerecht definitief verwijderen?")) return;
+    if (!window.confirm(dict.menu.confirmDelete)) return;
     setMenu({
       ...menu,
       courses: menu.courses.map((course) => ({
@@ -216,7 +206,7 @@ function MenuEditor() {
     setStatus(response.ok ? "saved" : "error");
   }
 
-  if (!menu) return <p>Laden…</p>;
+  if (!menu) return <p>{dict.menu.loading}</p>;
 
   return (
     <div>
@@ -226,13 +216,13 @@ function MenuEditor() {
           disabled={status === "saving"}
           className="bg-[#E4572E] px-4 py-2 text-[14px] font-semibold text-white disabled:opacity-50"
         >
-          {status === "saving" ? "Bezig…" : "Wijzigingen opslaan"}
+          {status === "saving" ? dict.menu.saving : dict.menu.save}
         </button>
         {status === "saved" ? (
-          <span className="text-[13px] text-[#7E8F6B]">Opgeslagen. Direct live.</span>
+          <span className="text-[13px] text-[#7E8F6B]">{dict.menu.saved}</span>
         ) : null}
         {status === "error" ? (
-          <span className="text-[13px] text-[#E4572E]">Opslaan mislukt. Probeer opnieuw.</span>
+          <span className="text-[13px] text-[#E4572E]">{dict.menu.error}</span>
         ) : null}
       </div>
 
@@ -252,7 +242,7 @@ function MenuEditor() {
                     <div className="flex items-center gap-3 px-3 py-2">
                       <button
                         onClick={() => toggleExpanded(item.id)}
-                        aria-label="Details tonen"
+                        aria-label={dict.menu.showDetails}
                         className="shrink-0 text-[12px] text-[#141412]/40"
                       >
                         {expanded.has(item.id) ? "▾" : "▸"}
@@ -269,7 +259,7 @@ function MenuEditor() {
                           checked={item.available}
                           onChange={(e) => updateItem(item.id, { available: e.target.checked })}
                         />
-                        beschikbaar
+                        {dict.menu.available}
                       </label>
                       <div className="flex shrink-0 items-center gap-1">
                         <span className="text-[13px] text-[#141412]/50">€</span>
@@ -295,7 +285,7 @@ function MenuEditor() {
                           {(["nl", "en", "fr"] as const).map((locale) => (
                             <label key={locale} className="block text-[12px]">
                               <span className="mb-0.5 block uppercase text-[#141412]/50">
-                                Naam ({locale})
+                                {dict.menu.name} ({locale})
                               </span>
                               <input
                                 type="text"
@@ -313,7 +303,7 @@ function MenuEditor() {
                           {(["nl", "en", "fr"] as const).map((locale) => (
                             <label key={locale} className="block text-[12px]">
                               <span className="mb-0.5 block uppercase text-[#141412]/50">
-                                Omschrijving ({locale})
+                                {dict.menu.description} ({locale})
                               </span>
                               <input
                                 type="text"
@@ -329,7 +319,7 @@ function MenuEditor() {
 
                         <label className="mb-3 block max-w-[120px] text-[12px]">
                           <span className="mb-0.5 block uppercase text-[#141412]/50">
-                            Aantal stuks
+                            {dict.menu.pieces}
                           </span>
                           <input
                             type="number"
@@ -346,17 +336,17 @@ function MenuEditor() {
 
                         <div className="mb-3">
                           <span className="mb-1 block text-[12px] uppercase text-[#141412]/50">
-                            Allergenen
+                            {dict.menu.allergens}
                           </span>
                           <div className="flex flex-wrap gap-x-3 gap-y-1">
-                            {ALLERGEN_OPTIONS.map((a) => (
-                              <label key={a.id} className="flex items-center gap-1 text-[12.5px]">
+                            {ALLERGEN_IDS.map((id) => (
+                              <label key={id} className="flex items-center gap-1 text-[12.5px]">
                                 <input
                                   type="checkbox"
-                                  checked={item.allergens.includes(a.id)}
-                                  onChange={() => toggleListValue(item.id, "allergens", a.id)}
+                                  checked={item.allergens.includes(id)}
+                                  onChange={() => toggleListValue(item.id, "allergens", id)}
                                 />
-                                {a.label}
+                                {dict.allergens[id]}
                               </label>
                             ))}
                           </div>
@@ -364,17 +354,17 @@ function MenuEditor() {
 
                         <div className="mb-3">
                           <span className="mb-1 block text-[12px] uppercase text-[#141412]/50">
-                            Labels
+                            {dict.menu.tags}
                           </span>
                           <div className="flex flex-wrap gap-x-3 gap-y-1">
-                            {TAG_OPTIONS.map((t) => (
-                              <label key={t.id} className="flex items-center gap-1 text-[12.5px]">
+                            {TAG_IDS.map((id) => (
+                              <label key={id} className="flex items-center gap-1 text-[12.5px]">
                                 <input
                                   type="checkbox"
-                                  checked={item.tags.includes(t.id)}
-                                  onChange={() => toggleListValue(item.id, "tags", t.id)}
+                                  checked={item.tags.includes(id)}
+                                  onChange={() => toggleListValue(item.id, "tags", id)}
                                 />
-                                {t.label}
+                                {dict.tags[id]}
                               </label>
                             ))}
                           </div>
@@ -384,7 +374,7 @@ function MenuEditor() {
                           onClick={() => deleteItem(item.id)}
                           className="text-[12px] text-[#E4572E] underline"
                         >
-                          Dit gerecht verwijderen
+                          {dict.menu.deleteDish}
                         </button>
                       </div>
                     ) : null}
@@ -395,7 +385,7 @@ function MenuEditor() {
                 onClick={() => addItem(category.id)}
                 className="mt-1.5 border border-dashed border-[#141412]/25 px-3 py-1.5 text-[12.5px] text-[#141412]/60"
               >
-                + Gerecht toevoegen aan &ldquo;{category.name.nl}&rdquo;
+                {dict.menu.addDish(category.name.nl)}
               </button>
             </div>
           ))}
@@ -413,7 +403,7 @@ function itemsOf(menu: Menu): MenuItem[] {
  * Hours
  * ------------------------------------------------------------------ */
 
-function HoursEditor() {
+function HoursEditor({ dict }: { dict: AdminDictionary }) {
   const [config, setConfig] = useState<HoursConfig | null>(null);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
@@ -434,34 +424,34 @@ function HoursEditor() {
     setStatus(response.ok ? "saved" : "error");
   }
 
-  if (!config) return <p>Laden…</p>;
+  if (!config) return <p>{dict.hours.loading}</p>;
 
   return (
     <div className="max-w-[480px]">
       <div className="mb-5 grid grid-cols-2 gap-4">
         <TimeField
-          label="Middag open"
+          label={dict.hours.lunchOpen}
           value={config.services.lunch.open}
           onChange={(m) =>
             setConfig({ ...config, services: { ...config.services, lunch: { ...config.services.lunch, open: m } } })
           }
         />
         <TimeField
-          label="Middag sluit"
+          label={dict.hours.lunchClose}
           value={config.services.lunch.close}
           onChange={(m) =>
             setConfig({ ...config, services: { ...config.services, lunch: { ...config.services.lunch, close: m } } })
           }
         />
         <TimeField
-          label="Avond open"
+          label={dict.hours.dinnerOpen}
           value={config.services.dinner.open}
           onChange={(m) =>
             setConfig({ ...config, services: { ...config.services, dinner: { ...config.services.dinner, open: m } } })
           }
         />
         <TimeField
-          label="Avond sluit"
+          label={dict.hours.dinnerClose}
           value={config.services.dinner.close}
           onChange={(m) =>
             setConfig({ ...config, services: { ...config.services, dinner: { ...config.services.dinner, close: m } } })
@@ -470,13 +460,13 @@ function HoursEditor() {
       </div>
 
       <label className="mb-5 block text-[13px]">
-        <span className="mb-1 block text-[#141412]/60">Wekelijkse sluitingsdag</span>
+        <span className="mb-1 block text-[#141412]/60">{dict.hours.closedWeekday}</span>
         <select
           value={config.closedWeekday}
           onChange={(e) => setConfig({ ...config, closedWeekday: Number(e.target.value) })}
           className="border border-[#141412]/20 bg-white px-3 py-2 text-[14px]"
         >
-          {WEEKDAY_LABELS.map((label, i) => (
+          {dict.hours.weekdays.map((label, i) => (
             <option key={i} value={i}>
               {label}
             </option>
@@ -490,13 +480,13 @@ function HoursEditor() {
           disabled={status === "saving"}
           className="bg-[#E4572E] px-4 py-2 text-[14px] font-semibold text-white disabled:opacity-50"
         >
-          {status === "saving" ? "Bezig…" : "Openingsuren opslaan"}
+          {status === "saving" ? dict.hours.saving : dict.hours.save}
         </button>
         {status === "saved" ? (
-          <span className="text-[13px] text-[#7E8F6B]">Opgeslagen. Direct live.</span>
+          <span className="text-[13px] text-[#7E8F6B]">{dict.hours.saved}</span>
         ) : null}
         {status === "error" ? (
-          <span className="text-[13px] text-[#E4572E]">Opslaan mislukt.</span>
+          <span className="text-[13px] text-[#E4572E]">{dict.hours.error}</span>
         ) : null}
       </div>
     </div>
@@ -529,13 +519,9 @@ function TimeField({
  * Gallery photos
  * ------------------------------------------------------------------ */
 
-const FEATURED_COURSES: { id: CourseId; label: string }[] = [
-  { id: "sushi", label: "Sushi" },
-  { id: "bowls", label: "Bowls & boxes" },
-  { id: "drinks", label: "Dranken" },
-];
+const FEATURED_COURSES = ["sushi", "bowls", "drinks"] as const satisfies readonly CourseId[];
 
-function GalleryEditor() {
+function GalleryEditor({ dict }: { dict: AdminDictionary }) {
   const [images, setImages] = useState<Record<string, { dataUrl: string } | null> | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -571,16 +557,14 @@ function GalleryEditor() {
     refresh();
   }
 
-  if (!images) return <p>Laden…</p>;
+  if (!images) return <p>{dict.gallery.loading}</p>;
 
   return (
     <div>
-      <p className="mb-5 max-w-[52ch] text-[13.5px] text-[#141412]/60">
-        Zonder foto toont een paneel een kanji-tegel in plaats van een foto. Upload een foto om
-        die te vervangen — JPG, PNG of WebP, max 1,5MB.
-      </p>
+      <p className="mb-5 max-w-[52ch] text-[13.5px] text-[#141412]/60">{dict.gallery.intro}</p>
       <div className="grid gap-5 sm:grid-cols-3">
-        {FEATURED_COURSES.map(({ id, label }) => {
+        {FEATURED_COURSES.map((id) => {
+          const label = dict.gallery.courses[id];
           const image = images[id];
           return (
             <div key={id} className="border border-[#141412]/10 bg-white p-3">
@@ -590,7 +574,7 @@ function GalleryEditor() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={image.dataUrl} alt={label} className="h-full w-full object-cover" />
                 ) : (
-                  "kanji-tegel (standaard)"
+                  dict.gallery.defaultLabel
                 )}
               </div>
               <input
@@ -610,7 +594,7 @@ function GalleryEditor() {
                   disabled={busy === id}
                   className="text-[12px] text-[#141412]/50 underline disabled:opacity-50"
                 >
-                  Terug naar standaard
+                  {dict.gallery.reset}
                 </button>
               ) : null}
             </div>

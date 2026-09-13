@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAdminLocale } from "@/lib/use-admin-locale";
+import { AdminLocaleToggle } from "@/components/admin/AdminLocaleToggle";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { locale, setLocale, dict } = useAdminLocale();
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -29,12 +32,10 @@ export default function LoginPage() {
 
       const json = (await response.json().catch(() => ({}))) as { error?: string };
       setError(
-        json.error === "too-many-attempts"
-          ? "Te veel pogingen. Probeer het over een kwartier opnieuw."
-          : "Verkeerd wachtwoord.",
+        json.error === "too-many-attempts" ? dict.login.tooManyAttempts : dict.login.wrongPassword,
       );
     } catch {
-      setError("Geen verbinding. Controleer uw internet.");
+      setError(dict.login.networkError);
     } finally {
       setSubmitting(false);
     }
@@ -42,8 +43,13 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto mt-[10vh] max-w-[360px]">
-      <h1 className="mb-1 text-xl font-bold">Kyoto — Beheer</h1>
-      <p className="mb-6 text-sm text-[#141412]/60">Log in om de kaart, uren en foto&rsquo;s te beheren.</p>
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h1 className="m-0 text-xl font-bold">{dict.brand}</h1>
+          <p className="m-0 mt-1 text-sm text-[#141412]/60">{dict.login.subtitle}</p>
+        </div>
+        <AdminLocaleToggle locale={locale} onChange={setLocale} />
+      </div>
 
       <form onSubmit={submit} className="flex flex-col gap-3">
         <input
@@ -51,7 +57,7 @@ export default function LoginPage() {
           autoFocus
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Wachtwoord"
+          placeholder={dict.login.passwordPlaceholder}
           className="border border-[#141412]/20 bg-white px-3.5 py-2.5 text-[15px] outline-none focus:border-[#E4572E]"
         />
         {error ? <p className="m-0 text-[13px] text-[#E4572E]">{error}</p> : null}
@@ -60,7 +66,7 @@ export default function LoginPage() {
           disabled={submitting || !password}
           className="bg-[#E4572E] px-4 py-2.5 text-[14px] font-semibold text-white transition-opacity disabled:opacity-50"
         >
-          {submitting ? "Bezig…" : "Inloggen"}
+          {submitting ? dict.login.submitBusy : dict.login.submit}
         </button>
       </form>
     </div>
