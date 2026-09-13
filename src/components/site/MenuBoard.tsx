@@ -16,8 +16,8 @@ import type { Dictionary } from "@/lib/dictionary";
  * Entry is staggered per course rather than across all fourteen slips at once,
  * so scrolling never waits on a long queue of delays.
  */
-export function MenuBoard({ locale, dict }: { locale: Locale; dict: Dictionary }) {
-  const menu = loadMenu();
+export async function MenuBoard({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+  const menu = await loadMenu();
 
   return (
     <Section id="board" className="bg-ai-deep">

@@ -6,6 +6,9 @@ import { OrderStatusView } from "@/components/order/OrderStatusView";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
+// See [lang]/privacy/page.tsx for why every page under [lang] needs this.
+export const dynamic = "force-dynamic";
+
 export default async function OrderStatusPage({
   params,
   searchParams,

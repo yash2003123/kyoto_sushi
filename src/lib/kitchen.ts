@@ -13,7 +13,7 @@
  */
 
 import type { Order } from "./orders";
-import { findItem, t } from "./menu";
+import { loadMenu, indexMenu, t } from "./menu";
 
 export type KitchenTicket = {
   reference: string;
@@ -27,7 +27,8 @@ export type KitchenTicket = {
   total: number;
 };
 
-export function buildTicket(order: Order): KitchenTicket {
+export async function buildTicket(order: Order): Promise<KitchenTicket> {
+  const index = indexMenu(await loadMenu());
   return {
     reference: order.reference,
     placedAt: order.createdAt,
@@ -42,7 +43,7 @@ export function buildTicket(order: Order): KitchenTicket {
     // The ticket prints in Dutch: that is the language of the kitchen,
     // whatever language the customer ordered in.
     lines: order.totals.lines.map((line) => ({
-      name: t(findItem(line.id)?.name, "nl"),
+      name: t(index.get(line.id)?.name, "nl"),
       quantity: line.quantity,
     })),
     total: order.totals.total,
@@ -51,7 +52,7 @@ export function buildTicket(order: Order): KitchenTicket {
 
 export async function sendToKitchen(order: Order): Promise<boolean> {
   const url = process.env.KITCHEN_WEBHOOK_URL;
-  const ticket = buildTicket(order);
+  const ticket = await buildTicket(order);
 
   if (!url) {
     // No printer wired up yet. Log the ticket so it is at least recoverable

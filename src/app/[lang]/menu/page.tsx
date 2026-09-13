@@ -7,6 +7,10 @@ import { MenuBrowser } from "@/components/order/MenuBrowser";
 import { Reveal } from "@/components/motion";
 import { StickyCartBar } from "@/components/order/StickyCartBar";
 
+// See the homepage's page.tsx for why: this reads admin-editable menu data,
+// and static generation plus on-demand revalidation is fragile for that.
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: {
@@ -27,7 +31,7 @@ export default async function MenuPage({
   if (!isLocale(lang)) notFound();
   const locale = lang as Locale;
   const dict = getDictionary(locale);
-  const menu = loadMenu();
+  const menu = await loadMenu();
 
   return (
     <div className="wrap py-12 pb-32 sm:py-16">

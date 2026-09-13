@@ -2,7 +2,7 @@
 
 import { m, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
-import { localNow, openState, statusMessage } from "@/lib/hours";
+import { localNow, openState, statusMessage, type HoursConfig } from "@/lib/hours";
 import type { Dictionary } from "@/lib/dictionary";
 import { duration, ease } from "@/components/motion";
 
@@ -13,8 +13,13 @@ import { duration, ease } from "@/components/motion";
  * visitor's can disagree across a service boundary, and a hydration mismatch
  * on the very first thing a hungry customer reads is not worth the SSR.
  * The reserved height keeps it from shifting anything when the text lands.
+ *
+ * `hours` is resolved server-side (by the page that renders Hero) and passed
+ * down — the admin panel can change opening hours, and a client component
+ * re-checking every minute must not be doing that recomputation against
+ * values baked into the JS bundle at the last deploy.
  */
-export function LiveStatus({ dict }: { dict: Dictionary }) {
+export function LiveStatus({ dict, hours }: { dict: Dictionary; hours: HoursConfig }) {
   const [message, setMessage] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   // reducedMotion="user" strips transforms but not opacity, and an endlessly
@@ -24,15 +29,15 @@ export function LiveStatus({ dict }: { dict: Dictionary }) {
   useEffect(() => {
     function update() {
       const now = localNow();
-      const state = openState(now);
+      const state = openState(now, hours.services, hours.closedWeekday);
       setOpen(state.open);
-      setMessage(statusMessage(state, now, dict.status));
+      setMessage(statusMessage(state, now, dict.status, hours.services));
     }
     update();
     // Re-check each minute so the pill flips at 14:30 without a reload.
     const timer = window.setInterval(update, 60_000);
     return () => window.clearInterval(timer);
-  }, [dict]);
+  }, [dict, hours]);
 
   return (
     <div className="mt-8 flex min-h-[42px] justify-center">

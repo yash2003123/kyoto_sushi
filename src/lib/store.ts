@@ -84,14 +84,44 @@ const memoryHashes = devStore.hashes;
  * Records
  * ------------------------------------------------------------------ */
 
-export async function putRecord(key: string, value: unknown): Promise<void> {
+export async function putRecord(
+  key: string,
+  value: unknown,
+  ttlSeconds: number = ORDER_TTL_SECONDS,
+): Promise<void> {
   const encoded = JSON.stringify(value);
   const db = redis();
   if (db) {
-    await db.set(key, encoded, { ex: ORDER_TTL_SECONDS });
+    await db.set(key, encoded, { ex: ttlSeconds });
     return;
   }
   memory.set(key, encoded);
+}
+
+export async function deleteRecord(key: string): Promise<void> {
+  const db = redis();
+  if (db) {
+    await db.del(key);
+    return;
+  }
+  memory.delete(key);
+}
+
+/**
+ * Increments a counter, setting its expiry only the first time it is
+ * created — a login-attempt counter, say. Returns the new count.
+ */
+export async function incrementCounter(key: string, ttlSeconds: number): Promise<number> {
+  const db = redis();
+  if (db) {
+    const count = await db.incr(key);
+    if (count === 1) await db.expire(key, ttlSeconds);
+    return count;
+  }
+
+  const current = Number(memory.get(key) ?? "0") + 1;
+  memory.set(key, String(current));
+  return current;
 }
 
 export async function getRecord<T>(key: string): Promise<T | undefined> {

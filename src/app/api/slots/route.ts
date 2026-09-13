@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { slotsForToday } from "@/lib/slots";
 import { slotLoadForToday } from "@/lib/orders";
 import { getServiceState } from "@/lib/service-state";
-import { localNow, openState } from "@/lib/hours";
+import { localNow, openState, getHoursConfig } from "@/lib/hours";
 
 export const dynamic = "force-dynamic";
 
@@ -13,14 +13,15 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const service = getServiceState();
   const now = localNow();
+  const { services, closedWeekday } = await getHoursConfig();
   const load = await slotLoadForToday();
-  const slots = slotsForToday(load, now);
+  const slots = slotsForToday(load, now, services, closedWeekday);
 
   return NextResponse.json(
     {
       paused: service.paused,
       prepMinutes: service.prepMinutes,
-      open: openState(now).open,
+      open: openState(now, services, closedWeekday).open,
       slots: slots.map(({ minutes, label, full }) => ({ minutes, label, full })),
     },
     { headers: { "cache-control": "no-store" } },

@@ -12,11 +12,12 @@
  */
 
 import {
-  SERVICES,
-  CLOSED_WEEKDAY,
+  DEFAULT_SERVICES,
+  DEFAULT_CLOSED_WEEKDAY,
   formatMinutes,
   localNow,
   type LocalNow,
+  type ServicesConfig,
 } from "./hours";
 import { getServiceState } from "./service-state";
 
@@ -48,15 +49,17 @@ function roundUpToSlot(minutes: number): number {
 export function slotsForToday(
   load: Map<number, number>,
   now: LocalNow = localNow(),
+  services: ServicesConfig = DEFAULT_SERVICES,
+  closedWeekday: number = DEFAULT_CLOSED_WEEKDAY,
 ): Slot[] {
   const service = getServiceState();
   if (service.paused) return [];
-  if (now.weekday === CLOSED_WEEKDAY) return [];
+  if (now.weekday === closedWeekday) return [];
 
   const earliest = roundUpToSlot(now.minutes + service.prepMinutes);
   const slots: Slot[] = [];
 
-  for (const window of [SERVICES.lunch, SERVICES.dinner]) {
+  for (const window of [services.lunch, services.dinner]) {
     const start = Math.max(earliest, window.open);
     const end = window.close - CLOSING_BUFFER;
     for (let m = roundUpToSlot(start); m <= end; m += SLOT_MINUTES) {
@@ -78,14 +81,20 @@ export function isSlotBookable(
   minutes: number,
   load: Map<number, number>,
   now: LocalNow = localNow(),
+  services: ServicesConfig = DEFAULT_SERVICES,
+  closedWeekday: number = DEFAULT_CLOSED_WEEKDAY,
 ): boolean {
-  return slotsForToday(load, now).some((s) => s.minutes === minutes && !s.full);
+  return slotsForToday(load, now, services, closedWeekday).some(
+    (s) => s.minutes === minutes && !s.full,
+  );
 }
 
 /** The soonest bookable slot, used for the "as soon as possible" option. */
 export function earliestSlot(
   load: Map<number, number>,
   now: LocalNow = localNow(),
+  services: ServicesConfig = DEFAULT_SERVICES,
+  closedWeekday: number = DEFAULT_CLOSED_WEEKDAY,
 ): Slot | null {
-  return slotsForToday(load, now).find((s) => !s.full) ?? null;
+  return slotsForToday(load, now, services, closedWeekday).find((s) => !s.full) ?? null;
 }

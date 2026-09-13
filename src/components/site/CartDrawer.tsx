@@ -1,9 +1,9 @@
 "use client";
 
 import { AnimatePresence, m } from "motion/react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useCart } from "@/lib/cart";
-import { findItem, t } from "@/lib/menu";
+import { indexMenu, t, type Menu } from "@/lib/menu";
 import { formatPrice, type Locale } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/dictionary";
 import { AnimatedNumber, duration, ease, spring, stagger } from "@/components/motion";
@@ -15,10 +15,23 @@ import { Button, ButtonLink } from "@/components/ui/Button";
  * The panel rides a spring because it is a physical surface the customer just
  * pulled open; the scrim is a plain opacity fade behind it. Lines animate out
  * with `layout` so removing one closes the gap instead of snapping.
+ *
+ * `menu` comes from the server layout that renders this component — the menu
+ * lives in the store now (the admin panel writes it), and a client component
+ * cannot read that directly, so the resolved menu arrives as a prop instead.
  */
-export function CartDrawer({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+export function CartDrawer({
+  locale,
+  dict,
+  menu,
+}: {
+  locale: Locale;
+  dict: Dictionary;
+  menu: Menu;
+}) {
   const { lines, subtotal, drawerOpen, closeDrawer, decrement, add, remove, clear } =
     useCart();
+  const menuIndex = useMemo(() => indexMenu(menu), [menu]);
 
   // Escape to close, and lock the page behind the drawer.
   useEffect(() => {
@@ -95,7 +108,7 @@ export function CartDrawer({ locale, dict }: { locale: Locale; dict: Dictionary 
                 <ul className="m-0 list-none p-0">
                   <AnimatePresence initial={false} mode="popLayout">
                     {lines.map((line, index) => {
-                      const item = findItem(line.id);
+                      const item = menuIndex.get(line.id);
                       if (!item) return null;
                       return (
                         <m.li

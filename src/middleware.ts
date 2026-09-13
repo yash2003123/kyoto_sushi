@@ -1,16 +1,37 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { defaultLocale, locales } from "@/lib/i18n";
+import { isValidSession, SESSION_COOKIE } from "@/lib/admin-session";
 
 /**
- * Locale routing.
+ * Locale routing, plus the admin panel's auth gate.
  *
  * Every language gets a real, indexable URL (`/nl/`, `/en/`, `/fr/`) rather
  * than a client-side toggle — that was only acceptable in the single-file
  * concept. A bare path is redirected to the visitor's best match, falling back
  * to Dutch, which is the operating language of the restaurant.
+ *
+ * `/beheer` (the admin panel) is deliberately not part of that: it has no
+ * locale variants, and it is not a page a hungry customer should ever land
+ * on by accident, so it is excluded from the locale matcher entirely and
+ * checked separately here instead.
+ *
+ * Only `admin-session.ts` is imported for the auth check, never
+ * admin-auth.ts — this file runs on the Edge runtime, which cannot reliably
+ * run the `node:crypto` calls admin-auth.ts uses for the password check, and
+ * middleware only ever needs to check whether a session id is still valid,
+ * not create one.
  */
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (pathname === "/beheer" || pathname.startsWith("/beheer/")) {
+    if (pathname === "/beheer/login") return NextResponse.next();
+    const sessionId = request.cookies.get(SESSION_COOKIE)?.value;
+    if (await isValidSession(sessionId)) return NextResponse.next();
+    const url = request.nextUrl.clone();
+    url.pathname = "/beheer/login";
+    return NextResponse.redirect(url);
+  }
 
   const hasLocale = locales.some(
     (locale) => pathname === `/${locale}` || pathname.startsWith(`/${locale}/`),

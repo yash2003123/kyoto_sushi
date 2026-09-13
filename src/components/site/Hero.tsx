@@ -4,8 +4,10 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import type { Locale } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/dictionary";
+import { getHoursConfig } from "@/lib/hours";
 
-export function Hero({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+export async function Hero({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+  const hours = await getHoursConfig();
   return (
     <section className="relative overflow-hidden pb-16 sm:pb-20">
       <Noren />
@@ -38,7 +40,7 @@ export function Hero({ locale, dict }: { locale: Locale; dict: Dictionary }) {
       </Stagger>
 
       <div className="wrap text-center">
-        <LiveStatus dict={dict} />
+        <LiveStatus dict={dict} hours={hours} />
         <Reveal
           as="p"
           delay={0.15}

@@ -3,7 +3,7 @@ import { PricingError, TRANSPORT_QUESTION_THRESHOLD, priceOrder } from "@/lib/pr
 import { SlotFullError, createOrder, slotLoadForToday, updateOrder } from "@/lib/orders";
 import { settlePayment } from "@/lib/fulfilment";
 import { isSlotBookable, earliestSlot } from "@/lib/slots";
-import { formatMinutes, localNow, openState } from "@/lib/hours";
+import { formatMinutes, localNow, openState, getHoursConfig } from "@/lib/hours";
 import { getServiceState } from "@/lib/service-state";
 import { mollie, toMollieAmount } from "@/lib/mollie";
 import { isPaymentMethod } from "@/lib/payment-methods";
@@ -55,7 +55,10 @@ export async function POST(request: Request) {
   if (service.paused) return fail("orders-paused", 409);
 
   const now = localNow();
-  if (!openState(now).open && localNow().weekday === 1) return fail("closed", 409);
+  const { services, closedWeekday } = await getHoursConfig();
+  if (!openState(now, services, closedWeekday).open && now.weekday === closedWeekday) {
+    return fail("closed", 409);
+  }
 
   const locale: Locale = isLocale(str(body.locale)) ? (body.locale as Locale) : "nl";
 
@@ -80,7 +83,7 @@ export async function POST(request: Request) {
 
   let totals;
   try {
-    totals = priceOrder(cart);
+    totals = await priceOrder(cart);
   } catch (error) {
     if (error instanceof PricingError) return fail(error.message);
     throw error;
@@ -92,13 +95,16 @@ export async function POST(request: Request) {
   let slotLabel: string;
 
   if (body.slotMinutes === null || body.slotMinutes === undefined) {
-    const soonest = earliestSlot(load, now);
+    const soonest = earliestSlot(load, now, services, closedWeekday);
     if (!soonest) return fail("no-slots", 409);
     slotMinutes = soonest.minutes;
     slotLabel = soonest.label;
   } else {
     const requested = Number(body.slotMinutes);
-    if (!Number.isInteger(requested) || !isSlotBookable(requested, load, now)) {
+    if (
+      !Number.isInteger(requested) ||
+      !isSlotBookable(requested, load, now, services, closedWeekday)
+    ) {
       return fail("slot-unavailable", 409);
     }
     slotMinutes = requested;

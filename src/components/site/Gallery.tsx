@@ -1,23 +1,20 @@
 import Link from "next/link";
-import { Reveal, RevealFrame, Stagger, StaggerItem } from "@/components/motion";
+import { Reveal, RevealFrame, RevealImage, Stagger, StaggerItem } from "@/components/motion";
 import { loadMenu, t, type CourseId } from "@/lib/menu";
+import { getGalleryImage } from "@/lib/gallery-settings";
 import type { Locale } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/dictionary";
 
 /**
  * A warm, light band between the hero and the menu board.
  *
- * The site has no food photography yet — the shoot the project brief calls
- * for hasn't happened. Rather than fake photos of dishes nobody has actually
- * been served (a real problem on a live ordering site: a customer comparing
- * plate to picture), each panel is a large course kanji on a soft gradient,
- * the same idiom the noren already uses in the hero. It cannot be mistaken
- * for a photograph, and it still turns three flat navy sections in a row
- * into something with warmth and light in it. `RevealFrame` exists
- * specifically for this — "food-photo slots that are waiting on the shoot".
- *
- * Swap a panel's kanji tile for a real `RevealImage` once photography exists;
- * everything else (link, caption, reveal timing) stays the same.
+ * Each panel shows a large course kanji on a soft gradient by default — the
+ * stand-in for real food photography, which the project brief flagged as not
+ * shot yet. Once the admin panel has a real photo for a course, that panel
+ * swaps to it automatically; courses without one keep the kanji treatment.
+ * `RevealFrame`/`RevealImage` exist specifically for this — the doc comment
+ * on RevealFrame calls it out as built for "food-photo slots that are
+ * waiting on the shoot".
  */
 const FEATURED: { course: CourseId; wash: string; glyph: string }[] = [
   { course: "sushi", wash: "from-kaki/22 via-kaki/8", glyph: "寿" },
@@ -25,9 +22,14 @@ const FEATURED: { course: CourseId; wash: string; glyph: string }[] = [
   { course: "drinks", wash: "from-ai/20 via-ai/6", glyph: "飲" },
 ];
 
-export function Gallery({ locale, dict }: { locale: Locale; dict: Dictionary }) {
-  const menu = loadMenu();
+export async function Gallery({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+  const menu = await loadMenu();
   const courseById = new Map(menu.courses.map((c) => [c.id, c]));
+  const images = new Map(
+    await Promise.all(
+      FEATURED.map(async ({ course }) => [course, await getGalleryImage(course)] as const),
+    ),
+  );
 
   return (
     <section className="bg-washi text-sumi py-16 sm:py-22">
@@ -44,23 +46,38 @@ export function Gallery({ locale, dict }: { locale: Locale; dict: Dictionary }) 
           {FEATURED.map(({ course, wash, glyph }, index) => {
             const data = courseById.get(course);
             if (!data) return null;
+            const image = images.get(course);
+
             return (
               <StaggerItem key={course}>
                 <Link
                   href={`/${locale}/#board`}
                   className="group border-rule/40 block h-full overflow-hidden border no-underline"
                 >
-                  <RevealFrame
-                    className={`relative flex aspect-[4/3] items-center justify-center bg-gradient-to-br ${wash} to-washi`}
-                    delay={index * 0.06}
-                  >
-                    <span
-                      aria-hidden
-                      className="font-display text-sumi/12 group-hover:text-sumi/18 pointer-events-none text-[clamp(90px,13vw,150px)] leading-none font-black transition-colors duration-300"
+                  {image ? (
+                    <RevealImage
+                      src={image.dataUrl}
+                      alt={dict.courses[course]}
+                      fill
+                      unoptimized
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      frameClassName="relative aspect-[4/3]"
+                      className="object-cover"
+                      delay={index * 0.06}
+                    />
+                  ) : (
+                    <RevealFrame
+                      className={`relative flex aspect-[4/3] items-center justify-center bg-gradient-to-br ${wash} to-washi`}
+                      delay={index * 0.06}
                     >
-                      {glyph}
-                    </span>
-                  </RevealFrame>
+                      <span
+                        aria-hidden
+                        className="font-display text-sumi/12 group-hover:text-sumi/18 pointer-events-none text-[clamp(90px,13vw,150px)] leading-none font-black transition-colors duration-300"
+                      >
+                        {glyph}
+                      </span>
+                    </RevealFrame>
+                  )}
                   <div className="px-4 py-3.5">
                     <span className="block text-[15px] font-medium">{dict.courses[course]}</span>
                     {data.categories[0] ? (

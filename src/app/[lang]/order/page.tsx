@@ -4,6 +4,11 @@ import { isLocale, type Locale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/dictionary";
 import { CheckoutForm } from "@/components/order/CheckoutForm";
 import { Reveal } from "@/components/motion";
+import { loadMenu } from "@/lib/menu";
+
+// See the homepage's page.tsx for why: this reads admin-editable menu data,
+// and static generation plus on-demand revalidation is fragile for that.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -28,6 +33,7 @@ export default async function OrderPage({
   if (!isLocale(lang)) notFound();
   const locale = lang as Locale;
   const dict = getDictionary(locale);
+  const menu = await loadMenu();
 
   return (
     <div className="wrap py-12 sm:py-16">
@@ -36,7 +42,7 @@ export default async function OrderPage({
           {dict.checkout.title}
         </h1>
       </Reveal>
-      <CheckoutForm locale={locale} dict={dict} />
+      <CheckoutForm locale={locale} dict={dict} menu={menu} />
     </div>
   );
 }

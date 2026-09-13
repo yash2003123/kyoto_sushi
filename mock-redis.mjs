@@ -1,5 +1,6 @@
 // Minimal Upstash-REST-compatible server, enough to exercise the store's
-// real code paths: JSON round-trip, TTLs, and the atomic HINCRBY slot cap.
+// real code paths: JSON round-trip, TTLs, atomic HINCRBY/INCR, and DEL —
+// used by admin sessions (login/logout) and the gallery image reset.
 import { createServer } from "node:http";
 
 const strings = new Map();
@@ -15,6 +16,15 @@ function run(cmd) {
     }
     case "GET":
       return strings.has(args[0]) ? strings.get(args[0]) : null;
+    case "DEL": {
+      const existed = strings.delete(args[0]);
+      return existed ? 1 : 0;
+    }
+    case "INCR": {
+      const next = Number(strings.get(args[0]) ?? "0") + 1;
+      strings.set(args[0], String(next));
+      return next;
+    }
     case "HINCRBY": {
       const h = hashes.get(args[0]) ?? new Map();
       hashes.set(args[0], h);

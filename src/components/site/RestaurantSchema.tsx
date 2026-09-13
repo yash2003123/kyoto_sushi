@@ -1,4 +1,4 @@
-import { SERVICES, formatMinutes } from "@/lib/hours";
+import { formatMinutes, getHoursConfig } from "@/lib/hours";
 import { localeTags, type Locale } from "@/lib/i18n";
 import { siteUrl } from "@/lib/site";
 
@@ -10,8 +10,9 @@ import { siteUrl } from "@/lib/site";
  * actually starts. Every impression that ends on this domain instead of a
  * marketplace listing is the whole business case for the rebuild.
  */
-export function RestaurantSchema({ locale }: { locale: Locale }) {
+export async function RestaurantSchema({ locale }: { locale: Locale }) {
   const base = siteUrl();
+  const { services } = await getHoursConfig();
   const openDays = ["Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
   const schema = {
@@ -38,7 +39,7 @@ export function RestaurantSchema({ locale }: { locale: Locale }) {
       target: { "@type": "EntryPoint", urlTemplate: `${base}/${locale}/menu` },
     },
     openingHoursSpecification: openDays.flatMap((day) =>
-      [SERVICES.lunch, SERVICES.dinner].map((service) => ({
+      [services.lunch, services.dinner].map((service) => ({
         "@type": "OpeningHoursSpecification",
         dayOfWeek: day,
         opens: formatMinutes(service.open).padStart(5, "0"),

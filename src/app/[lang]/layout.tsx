@@ -9,6 +9,7 @@ import { Footer } from "@/components/site/Footer";
 import { CartDrawer } from "@/components/site/CartDrawer";
 import { SetHtmlLang } from "@/components/site/SetHtmlLang";
 import { siteUrl } from "@/lib/site";
+import { loadMenu } from "@/lib/menu";
 
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
@@ -58,6 +59,7 @@ export default async function LocaleLayout({
   if (!isLocale(lang)) notFound();
   const locale = lang as Locale;
   const dict = getDictionary(locale);
+  const menu = await loadMenu();
 
   return (
     <MotionProvider>
@@ -68,7 +70,7 @@ export default async function LocaleLayout({
           <PageTransition>{children}</PageTransition>
         </main>
         <Footer locale={locale} dict={dict} />
-        <CartDrawer locale={locale} dict={dict} />
+        <CartDrawer locale={locale} dict={dict} menu={menu} />
       </CartProvider>
     </MotionProvider>
   );

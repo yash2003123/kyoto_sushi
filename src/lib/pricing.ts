@@ -1,12 +1,14 @@
 /**
  * Order pricing. Integer cents throughout.
  *
- * This runs on the server at checkout as well as in the browser for the
- * summary, and both must agree — so the rules live here once and the API
- * recomputes rather than trusting anything the client sends.
+ * Server-only, called once from the checkout API. The client shows its own
+ * running total from the cart's price snapshots for instant feedback, but
+ * this is the one place that actually decides what gets charged — it always
+ * re-prices from the live menu rather than trusting anything the client
+ * sends, precisely so a stale client price can never become a real charge.
  */
 
-import { findItem } from "./menu";
+import { loadMenu, indexMenu } from "./menu";
 
 /** Above this, we ask how the customer is travelling so packing matches. */
 export const TRANSPORT_QUESTION_THRESHOLD = 6000;
@@ -41,11 +43,13 @@ export class PricingError extends Error {}
  * hard error rather than a silent drop: the customer must not discover at the
  * counter that the sashimi they paid for was already sold out.
  */
-export function priceOrder(cart: CartInput): OrderTotals {
+export async function priceOrder(cart: CartInput): Promise<OrderTotals> {
   if (cart.length === 0) throw new PricingError("empty-cart");
 
+  const index = indexMenu(await loadMenu());
+
   const lines: PricedLine[] = cart.map((line) => {
-    const item = findItem(line.id);
+    const item = index.get(line.id);
     if (!item) throw new PricingError(`unknown-item:${line.id}`);
     if (!item.available) throw new PricingError(`unavailable-item:${line.id}`);
 

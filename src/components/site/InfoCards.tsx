@@ -1,13 +1,14 @@
 import { Section, SectionHead } from "@/components/ui/Section";
 import { Stagger, StaggerItem } from "@/components/motion";
-import { SERVICES, WEEK_ORDER, CLOSED_WEEKDAY, formatMinutes } from "@/lib/hours";
+import { WEEK_ORDER, formatMinutes, getHoursConfig } from "@/lib/hours";
 import type { Dictionary } from "@/lib/dictionary";
 import { TodayHighlight } from "./TodayHighlight";
 
-export function InfoCards({ dict }: { dict: Dictionary }) {
-  const serviceLine = `${formatMinutes(SERVICES.lunch.open)}–${formatMinutes(
-    SERVICES.lunch.close,
-  )} · ${formatMinutes(SERVICES.dinner.open)}–${formatMinutes(SERVICES.dinner.close)}`;
+export async function InfoCards({ dict }: { dict: Dictionary }) {
+  const { services, closedWeekday } = await getHoursConfig();
+  const serviceLine = `${formatMinutes(services.lunch.open)}–${formatMinutes(
+    services.lunch.close,
+  )} · ${formatMinutes(services.dinner.open)}–${formatMinutes(services.dinner.close)}`;
 
   return (
     <Section id="info">
@@ -29,8 +30,8 @@ export function InfoCards({ dict }: { dict: Dictionary }) {
                 className="border-rule-soft flex justify-between gap-3 border-b py-1.5 last:border-b-0"
               >
                 <span className="text-washi-dim">{dict.days[day]}</span>
-                <span className={day === CLOSED_WEEKDAY ? "text-kaki" : "tabular"}>
-                  {day === CLOSED_WEEKDAY ? dict.info.closed : serviceLine}
+                <span className={day === closedWeekday ? "text-kaki" : "tabular"}>
+                  {day === closedWeekday ? dict.info.closed : serviceLine}
                 </span>
               </li>
             ))}

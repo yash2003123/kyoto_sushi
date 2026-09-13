@@ -4,7 +4,7 @@ import { AnimatePresence, m } from "motion/react";
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart";
-import { findItem, t } from "@/lib/menu";
+import { indexMenu, t, type Menu } from "@/lib/menu";
 import { formatPrice, type Locale } from "@/lib/i18n";
 import { TRANSPORT_QUESTION_THRESHOLD } from "@/lib/pricing";
 import { EMAIL, isValidPhone } from "@/lib/validation";
@@ -47,9 +47,18 @@ function errorCopy(dict: Dictionary, code: string): string {
   }
 }
 
-export function CheckoutForm({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+export function CheckoutForm({
+  locale,
+  dict,
+  menu,
+}: {
+  locale: Locale;
+  dict: Dictionary;
+  menu: Menu;
+}) {
   const { lines, subtotal, clear, ready } = useCart();
   const router = useRouter();
+  const index = useMemo(() => indexMenu(menu), [menu]);
 
   const [slotMinutes, setSlotMinutes] = useState<number | null>(null);
   const [method, setMethod] = useState<PaymentMethodId>("bancontact");
@@ -134,10 +143,10 @@ export function CheckoutForm({ locale, dict }: { locale: Locale; dict: Dictionar
   const summaryLines = useMemo(
     () =>
       lines.flatMap((line) => {
-        const item = findItem(line.id);
+        const item = index.get(line.id);
         return item ? [{ line, item }] : [];
       }),
-    [lines],
+    [lines, index],
   );
 
   // The cart is read from localStorage after mount. Rendering the full form
