@@ -83,9 +83,42 @@ export function Dashboard() {
  * Menu — prices and availability
  * ------------------------------------------------------------------ */
 
+const ALLERGEN_OPTIONS: { id: string; label: string }[] = [
+  { id: "fish", label: "vis" },
+  { id: "crustacean", label: "schaaldieren" },
+  { id: "gluten", label: "gluten" },
+  { id: "soy", label: "soja" },
+  { id: "sesame", label: "sesam" },
+  { id: "egg", label: "ei" },
+  { id: "milk", label: "melk" },
+  { id: "sulphites", label: "sulfieten" },
+];
+
+const TAG_OPTIONS: { id: string; label: string }[] = [
+  { id: "raw", label: "rauwe vis" },
+  { id: "spicy", label: "pittig" },
+  { id: "vegetarian", label: "vegetarisch" },
+  { id: "signature", label: "signature" },
+  { id: "student", label: "studentenmenu" },
+  { id: "lunch", label: "middagmenu" },
+];
+
+function blankItem(categoryId: string): MenuItem {
+  return {
+    id: `${categoryId}-${Date.now().toString(36)}`,
+    name: { nl: "Nieuw gerecht", en: "New dish", fr: "Nouveau plat" },
+    desc: { nl: "", en: "", fr: "" },
+    price: 0,
+    allergens: [],
+    tags: [],
+    available: true,
+  };
+}
+
 function MenuEditor() {
   const [menu, setMenu] = useState<Menu | null>(null);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetch("/api/admin/menu")
@@ -106,6 +139,69 @@ function MenuEditor() {
           ),
         })),
       })),
+    });
+  }
+
+  function updateLocalized(
+    itemId: string,
+    field: "name" | "desc",
+    locale: "nl" | "en" | "fr",
+    value: string,
+  ) {
+    if (!menu) return;
+    const item = itemsOf(menu).find((i) => i.id === itemId);
+    if (!item) return;
+    const current = item[field] ?? { nl: "", en: "", fr: "" };
+    updateItem(itemId, { [field]: { ...current, [locale]: value } } as Partial<MenuItem>);
+  }
+
+  function toggleListValue(itemId: string, field: "allergens" | "tags", value: string) {
+    if (!menu) return;
+    const item = itemsOf(menu).find((i) => i.id === itemId);
+    if (!item) return;
+    const list = item[field];
+    const next = list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+    updateItem(itemId, { [field]: next } as Partial<MenuItem>);
+  }
+
+  function addItem(categoryId: string) {
+    if (!menu) return;
+    const item = blankItem(categoryId);
+    setMenu({
+      ...menu,
+      courses: menu.courses.map((course) => ({
+        ...course,
+        categories: course.categories.map((category) =>
+          category.id === categoryId
+            ? { ...category, items: [...category.items, item] }
+            : category,
+        ),
+      })),
+    });
+    setExpanded((current) => new Set(current).add(item.id));
+  }
+
+  function deleteItem(itemId: string) {
+    if (!menu) return;
+    if (!window.confirm("Dit gerecht definitief verwijderen?")) return;
+    setMenu({
+      ...menu,
+      courses: menu.courses.map((course) => ({
+        ...course,
+        categories: course.categories.map((category) => ({
+          ...category,
+          items: category.items.filter((item) => item.id !== itemId),
+        })),
+      })),
+    });
+  }
+
+  function toggleExpanded(itemId: string) {
+    setExpanded((current) => {
+      const next = new Set(current);
+      if (next.has(itemId)) next.delete(itemId);
+      else next.add(itemId);
+      return next;
     });
   }
 
@@ -152,44 +248,165 @@ function MenuEditor() {
               </p>
               <div className="flex flex-col gap-1">
                 {category.items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-3 border border-[#141412]/10 bg-white px-3 py-2"
-                  >
-                    <span className="min-w-0 flex-1 truncate text-[14px]">{item.name.nl}</span>
-                    <label className="flex shrink-0 items-center gap-1.5 text-[12.5px] text-[#141412]/60">
-                      <input
-                        type="checkbox"
-                        checked={item.available}
-                        onChange={(e) => updateItem(item.id, { available: e.target.checked })}
-                      />
-                      beschikbaar
-                    </label>
-                    <div className="flex shrink-0 items-center gap-1">
-                      <span className="text-[13px] text-[#141412]/50">€</span>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={(item.price / 100).toFixed(2)}
-                        onChange={(e) => {
-                          const euros = Number(e.target.value);
-                          if (Number.isFinite(euros) && euros >= 0) {
-                            updateItem(item.id, { price: Math.round(euros * 100) });
-                          }
-                        }}
-                        className="w-20 border border-[#141412]/20 px-2 py-1 text-[13px]"
-                      />
+                  <div key={item.id} className="border border-[#141412]/10 bg-white">
+                    <div className="flex items-center gap-3 px-3 py-2">
+                      <button
+                        onClick={() => toggleExpanded(item.id)}
+                        aria-label="Details tonen"
+                        className="shrink-0 text-[12px] text-[#141412]/40"
+                      >
+                        {expanded.has(item.id) ? "▾" : "▸"}
+                      </button>
+                      <button
+                        onClick={() => toggleExpanded(item.id)}
+                        className="min-w-0 flex-1 truncate text-left text-[14px]"
+                      >
+                        {item.name.nl}
+                      </button>
+                      <label className="flex shrink-0 items-center gap-1.5 text-[12.5px] text-[#141412]/60">
+                        <input
+                          type="checkbox"
+                          checked={item.available}
+                          onChange={(e) => updateItem(item.id, { available: e.target.checked })}
+                        />
+                        beschikbaar
+                      </label>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <span className="text-[13px] text-[#141412]/50">€</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={(item.price / 100).toFixed(2)}
+                          onChange={(e) => {
+                            const euros = Number(e.target.value);
+                            if (Number.isFinite(euros) && euros >= 0) {
+                              updateItem(item.id, { price: Math.round(euros * 100) });
+                            }
+                          }}
+                          className="w-20 border border-[#141412]/20 px-2 py-1 text-[13px]"
+                        />
+                      </div>
                     </div>
+
+                    {expanded.has(item.id) ? (
+                      <div className="border-t border-[#141412]/10 bg-[#F0EBE0]/40 px-3 py-3">
+                        <div className="mb-3 grid gap-2 sm:grid-cols-3">
+                          {(["nl", "en", "fr"] as const).map((locale) => (
+                            <label key={locale} className="block text-[12px]">
+                              <span className="mb-0.5 block uppercase text-[#141412]/50">
+                                Naam ({locale})
+                              </span>
+                              <input
+                                type="text"
+                                value={item.name[locale] ?? ""}
+                                onChange={(e) =>
+                                  updateLocalized(item.id, "name", locale, e.target.value)
+                                }
+                                className="w-full border border-[#141412]/20 px-2 py-1.5 text-[13px]"
+                              />
+                            </label>
+                          ))}
+                        </div>
+
+                        <div className="mb-3 grid gap-2 sm:grid-cols-3">
+                          {(["nl", "en", "fr"] as const).map((locale) => (
+                            <label key={locale} className="block text-[12px]">
+                              <span className="mb-0.5 block uppercase text-[#141412]/50">
+                                Omschrijving ({locale})
+                              </span>
+                              <input
+                                type="text"
+                                value={item.desc?.[locale] ?? ""}
+                                onChange={(e) =>
+                                  updateLocalized(item.id, "desc", locale, e.target.value)
+                                }
+                                className="w-full border border-[#141412]/20 px-2 py-1.5 text-[13px]"
+                              />
+                            </label>
+                          ))}
+                        </div>
+
+                        <label className="mb-3 block max-w-[120px] text-[12px]">
+                          <span className="mb-0.5 block uppercase text-[#141412]/50">
+                            Aantal stuks
+                          </span>
+                          <input
+                            type="number"
+                            min="0"
+                            value={item.pieces ?? ""}
+                            onChange={(e) =>
+                              updateItem(item.id, {
+                                pieces: e.target.value ? Number(e.target.value) : undefined,
+                              })
+                            }
+                            className="w-full border border-[#141412]/20 px-2 py-1.5 text-[13px]"
+                          />
+                        </label>
+
+                        <div className="mb-3">
+                          <span className="mb-1 block text-[12px] uppercase text-[#141412]/50">
+                            Allergenen
+                          </span>
+                          <div className="flex flex-wrap gap-x-3 gap-y-1">
+                            {ALLERGEN_OPTIONS.map((a) => (
+                              <label key={a.id} className="flex items-center gap-1 text-[12.5px]">
+                                <input
+                                  type="checkbox"
+                                  checked={item.allergens.includes(a.id)}
+                                  onChange={() => toggleListValue(item.id, "allergens", a.id)}
+                                />
+                                {a.label}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="mb-3">
+                          <span className="mb-1 block text-[12px] uppercase text-[#141412]/50">
+                            Labels
+                          </span>
+                          <div className="flex flex-wrap gap-x-3 gap-y-1">
+                            {TAG_OPTIONS.map((t) => (
+                              <label key={t.id} className="flex items-center gap-1 text-[12.5px]">
+                                <input
+                                  type="checkbox"
+                                  checked={item.tags.includes(t.id)}
+                                  onChange={() => toggleListValue(item.id, "tags", t.id)}
+                                />
+                                {t.label}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => deleteItem(item.id)}
+                          className="text-[12px] text-[#E4572E] underline"
+                        >
+                          Dit gerecht verwijderen
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
                 ))}
               </div>
+              <button
+                onClick={() => addItem(category.id)}
+                className="mt-1.5 border border-dashed border-[#141412]/25 px-3 py-1.5 text-[12.5px] text-[#141412]/60"
+              >
+                + Gerecht toevoegen aan &ldquo;{category.name.nl}&rdquo;
+              </button>
             </div>
           ))}
         </div>
       ))}
     </div>
   );
+}
+
+function itemsOf(menu: Menu): MenuItem[] {
+  return menu.courses.flatMap((c) => c.categories.flatMap((cat) => cat.items));
 }
 
 /* ------------------------------------------------------------------ *

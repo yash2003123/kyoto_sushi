@@ -11,27 +11,45 @@ export async function GET() {
 }
 
 /**
- * Structural validation only — this never touches copy or item identity, so
- * it does not re-check names, descriptions or ids against the seed. What it
- * must catch: a price that is not a sane integer, since that number becomes
- * a real charge the moment it is saved. Anything shaped wrong here is
- * refused outright rather than partially accepted.
+ * The admin panel now edits item identity too (name, description, and it can
+ * mint a brand-new item with a client-generated id), which the previous,
+ * narrower version of this check — price and availability only — never had
+ * to worry about. Two things become real risks once ids and names are
+ * editable rather than fixed at the seed:
+ *
+ * - A duplicate id would let one item silently shadow another wherever the
+ *   menu gets indexed by id (pricing, the cart, the kitchen ticket) — the
+ *   shadowed item becomes unorderable with no error anywhere.
+ * - A blank Dutch name would show blank everywhere a locale is missing,
+ *   since `t()` falls back to `.nl` — Dutch is the one name that must exist.
  */
 function isValidMenu(value: unknown): value is Menu {
   if (typeof value !== "object" || value === null) return false;
   const menu = value as Partial<Menu>;
   if (!Array.isArray(menu.courses)) return false;
+
+  const seenIds = new Set<string>();
+
   return menu.courses.every((course: MenuCourse) => {
     if (typeof course.id !== "string" || !Array.isArray(course.categories)) return false;
     return course.categories.every((category) => {
       if (!Array.isArray(category.items)) return false;
       return category.items.every((item) => {
+        if (typeof item.id !== "string" || item.id.length === 0) return false;
+        if (seenIds.has(item.id)) return false;
+        seenIds.add(item.id);
+
         return (
-          typeof item.id === "string" &&
+          typeof item.name?.nl === "string" &&
+          item.name.nl.trim().length > 0 &&
           Number.isInteger(item.price) &&
           item.price >= 0 &&
           item.price < 100_000_00 && // a sanity ceiling, not a real menu price
-          typeof item.available === "boolean"
+          typeof item.available === "boolean" &&
+          Array.isArray(item.allergens) &&
+          item.allergens.every((a) => typeof a === "string") &&
+          Array.isArray(item.tags) &&
+          item.tags.every((t) => typeof t === "string")
         );
       });
     });
